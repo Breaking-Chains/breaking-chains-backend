@@ -40,6 +40,10 @@ public class AppException extends RuntimeException {
         return new AppException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", message);
     }
 
+    public static AppException forbidden(String message) {
+        return new AppException(HttpStatus.FORBIDDEN, "FORBIDDEN", message);
+    }
+
     public static AppException tokenExpired(String message) {
         return new AppException(HttpStatus.UNAUTHORIZED, "TOKEN_EXPIRED", message);
     }

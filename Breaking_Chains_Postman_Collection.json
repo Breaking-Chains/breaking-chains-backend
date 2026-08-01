@@ -20,6 +20,31 @@
 			"key": "refreshToken",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "chainId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "logId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "sessionId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "inviteCode",
+			"value": "SUHBAH-A1B2C3",
+			"type": "string"
+		},
+		{
+			"key": "partnershipId",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -235,6 +260,638 @@
 						"v1",
 						"auth",
 						"logout"
+					]
+				}
+			}
+		},
+		{
+			"name": "8. Create Habit Chain",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"title\": \"Pure Path - Overcome PMO\",\n  \"description\": \"Breaking PMO addiction through daily spiritual purification and urge surfing.\",\n  \"category\": \"SPIRITUAL_MORAL\",\n  \"subCategory\": \"PMO_RECOVERY\",\n  \"privacyLevel\": \"LEVEL_2_FULL_COUNSEL\",\n  \"costPerInstance\": 5.00,\n  \"timeMinutesPerInstance\": 45,\n  \"triggerTags\": [\"Late Night in Bed\", \"Boredom\", \"Social Media Scrolling\"],\n  \"substituteAction\": \"Perform Wudu with cool water, pray 2 Raka'at Salat al-Tawbah, and do 2-minute box breathing\",\n  \"intentStatement\": \"I intend for the sake of Allah to purify my eyes, heart, and soul.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains"
+					]
+				}
+			}
+		},
+		{
+			"name": "9. Get All Habit Chains",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains?status=ACTIVE",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "ACTIVE"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "10. Get Habit Chain by ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "11. Update Habit Chain",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"title\": \"Pure Path - PMO Recovery\",\n  \"privacyLevel\": \"LEVEL_2_FULL_COUNSEL\",\n  \"status\": \"ACTIVE\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "12. Delete Habit Chain",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "13. Log Daily Check-In (Clean)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"CLEAN\",\n  \"intensityLevel\": 2,\n  \"triggerTag\": \"Late Night in Bed\",\n  \"reflectionNote\": \"Stayed strong by putting phone outside bedroom and making Dhikr before sleep.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"logs"
+					]
+				}
+			}
+		},
+		{
+			"name": "14. Log Daily Check-In (Slip-Up)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"SLIP_UP\",\n  \"intensityLevel\": 8,\n  \"triggerTag\": \"Boredom & Social Media Scrolling\",\n  \"reflectionNote\": \"Stayed in bed too long with phone.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"logs"
+					]
+				}
+			}
+		},
+		{
+			"name": "15. Get Chain Check-In Logs",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"logs"
+					]
+				}
+			}
+		},
+		{
+			"name": "16. Delete Check-In Log",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs/{{logId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"logs",
+						"{{logId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "17. Start Emergency SOS Session",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"chainId\": \"{{chainId}}\",\n  \"sessionType\": \"PHYSICAL_CIRCUIT_BREAKER\",\n  \"cravingBefore\": 9\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/emergency/start",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"emergency",
+						"start"
+					]
+				}
+			}
+		},
+		{
+			"name": "18. Complete Emergency SOS Session",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"cravingAfter\": 3,\n  \"durationSeconds\": 180,\n  \"techniqueUsed\": \"PHYSICAL_LEAVE_ROOM + WUDU_COOL_WATER + BOX_BREATHING_60S\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/emergency/{{sessionId}}/complete",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"emergency",
+						"{{sessionId}}",
+						"complete"
+					]
+				}
+			}
+		},
+		{
+			"name": "19. Get Emergency SOS History",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/emergency/history",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"emergency",
+						"history"
+					]
+				}
+			}
+		},
+		{
+			"name": "20. Generate Partner Invite Code",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"role\": \"SPIRITUAL_MENTOR\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/partners/invite",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"partners",
+						"invite"
+					]
+				}
+			}
+		},
+		{
+			"name": "21. Accept Partner Invite Code",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"inviteCode\": \"{{inviteCode}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partners/accept",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partners",
+						"accept"
+					]
+				}
+			}
+		},
+		{
+			"name": "22. Get Mentees List (For Mentors)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partners/mentees",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partners",
+						"mentees"
+					]
+				}
+			}
+		},
+		{
+			"name": "23. Submit Mentor Counsel Note (Nasiha)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"noteContent\": \"Remember Allah's mercy is greater than any mistake. Read Surah Ad-Duha tonight and stay strong on your daily Dhikr.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/counsel-notes",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"counsel-notes"
+					]
+				}
+			}
+		},
+		{
+			"name": "24. Get Chain Counsel Notes",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/counsel-notes",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"counsel-notes"
+					]
+				}
+			}
+		},
+		{
+			"name": "25. Send 2-Way Chat Message",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"messageContent\": \"Assalamu Alaikum, I completed my 7-day clean streak today and feel much stronger!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partnerships/{{partnershipId}}/messages",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partnerships",
+						"{{partnershipId}}",
+						"messages"
+					]
+				}
+			}
+		},
+		{
+			"name": "26. Get 2-Way Chat Messages",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partnerships/{{partnershipId}}/messages",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partnerships",
+						"{{partnershipId}}",
+						"messages"
+					]
+				}
+			}
+		},
+		{
+			"name": "27. Send Partner Distress Alert",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"chainId\": \"{{chainId}}\",\n  \"message\": \"I am facing an intense urge right now, please make Du'a for me.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partners/distress-alert",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partners",
+						"distress-alert"
+					]
+				}
+			}
+		},
+		{
+			"name": "28. Get Chain Analytics & Barakah Impact",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/analytics",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"analytics"
+					]
+				}
+			}
+		},
+		{
+			"name": "29. Get All User Milestones",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/milestones",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"milestones"
 					]
 				}
 			}

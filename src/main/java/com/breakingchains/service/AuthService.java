@@ -10,6 +10,7 @@ import com.breakingchains.repository.UserRepository;
 import com.breakingchains.security.GoogleAuthVerifier;
 import com.breakingchains.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -31,10 +33,13 @@ public class AuthService {
 
     @Transactional
     public AuthDataDto register(RegisterRequest request) {
+        log.info("Attempting registration for email: {}", request.getEmail());
         if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn("Registration failed - email already in use: {}", request.getEmail());
             throw AppException.userExists("Email already in use");
         }
         if (userRepository.existsByUsername(request.getUsername())) {
+            log.warn("Registration failed - username already in use: {}", request.getUsername());
             throw AppException.userExists("Username already in use");
         }
 
@@ -47,6 +52,7 @@ public class AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
+        log.info("User registered successfully with ID: {}", savedUser.getId());
         TokenResponse tokens = createAndSaveTokens(savedUser);
 
         return AuthDataDto.builder()
@@ -57,13 +63,19 @@ public class AuthService {
 
     @Transactional
     public AuthDataDto login(LoginRequest request) {
+        log.info("Authentication attempt for email: {}", request.getEmail());
         User user = userRepository.findByEmail(request.getEmail().toLowerCase().trim())
-                .orElseThrow(() -> AppException.invalidCredentials("Invalid email or password"));
+                .orElseThrow(() -> {
+                    log.warn("Login failed - user not found: {}", request.getEmail());
+                    return AppException.invalidCredentials("Invalid email or password");
+                });
 
         if (user.getPassword() == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            log.warn("Login failed - password mismatch for email: {}", request.getEmail());
             throw AppException.invalidCredentials("Invalid email or password");
         }
 
+        log.info("User authenticated successfully with ID: {}", user.getId());
         TokenResponse tokens = createAndSaveTokens(user);
 
         return AuthDataDto.builder()
@@ -74,14 +86,17 @@ public class AuthService {
 
     @Transactional
     public AuthDataDto googleAuth(GoogleAuthRequest request) {
+        log.info("Attempting Google OAuth authentication");
         GoogleAuthVerifier.GoogleUserPayload payload;
         try {
             payload = googleAuthVerifier.verify(request.getIdToken());
         } catch (Exception ex) {
+            log.warn("Google OAuth verification failed: {}", ex.getMessage());
             throw AppException.unauthorized("Invalid or expired Google ID token");
         }
 
         if (payload == null) {
+            log.warn("Google OAuth payload returned null");
             throw AppException.unauthorized("Invalid or expired Google ID token");
         }
 
@@ -90,6 +105,7 @@ public class AuthService {
         User user;
         if (existingUser.isPresent()) {
             user = existingUser.get();
+            log.info("Google OAuth login for existing user ID: {}", user.getId());
         } else {
             Optional<User> userByEmail = userRepository.findByEmail(payload.getEmail());
             if (userByEmail.isPresent()) {
@@ -98,6 +114,7 @@ public class AuthService {
                 if (user.getAvatarUrl() == null) {
                     user.setAvatarUrl(payload.getPictureUrl());
                 }
+                log.info("Linked Google ID to existing email user ID: {}", user.getId());
             } else {
                 String baseUsername = payload.getEmail().split("@")[0];
                 String username = generateUniqueUsername(baseUsername);
@@ -110,6 +127,7 @@ public class AuthService {
                         .authProvider(AuthProvider.GOOGLE)
                         .googleId(payload.getGoogleId())
                         .build();
+                log.info("Creating new user from Google OAuth: {}", payload.getEmail());
             }
             user = userRepository.save(user);
         }
@@ -125,18 +143,24 @@ public class AuthService {
     @Transactional
     public TokenResponse refreshToken(RefreshTokenRequest request) {
         String token = request.getRefreshToken();
+        log.info("Attempting refresh token rotation");
         jwtProvider.validateRefreshToken(token);
 
         RefreshToken storedToken = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> AppException.invalidRefreshToken("Refresh token is invalid or revoked"));
+                .orElseThrow(() -> {
+                    log.warn("Refresh token rotation failed - token not found or revoked");
+                    return AppException.invalidRefreshToken("Refresh token is invalid or revoked");
+                });
 
         if (storedToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             refreshTokenRepository.delete(storedToken);
+            log.warn("Refresh token rotation failed - token expired");
             throw AppException.invalidRefreshToken("Refresh token is expired");
         }
 
         User user = storedToken.getUser();
         refreshTokenRepository.delete(storedToken);
+        log.info("Refresh token rotated successfully for user ID: {}", user.getId());
 
         return createAndSaveTokens(user);
     }
@@ -145,6 +169,7 @@ public class AuthService {
     public void logout(String refreshToken) {
         if (refreshToken != null && !refreshToken.isBlank()) {
             refreshTokenRepository.deleteByToken(refreshToken);
+            log.info("Successfully revoked refresh token on logout");
         }
     }
 

@@ -15,13 +15,22 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private void checkUser(User currentUser) {
+        if (currentUser == null) {
+            throw AppException.unauthorized("Authentication token is missing or invalid. Please log in first.");
+        }
+    }
+
     @Transactional(readOnly = true)
     public UserDto getProfile(User currentUser) {
+        checkUser(currentUser);
         return UserDto.fromEntity(currentUser);
     }
 
     @Transactional
     public UserDto updateProfile(User currentUser, UpdateProfileRequest request) {
+        checkUser(currentUser);
+
         if (request.getUsername() != null && !request.getUsername().isBlank()) {
             String newUsername = request.getUsername().trim();
             if (!newUsername.equalsIgnoreCase(currentUser.getUsername())) {

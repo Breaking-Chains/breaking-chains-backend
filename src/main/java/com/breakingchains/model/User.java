@@ -52,6 +52,10 @@ public class User {
     @Column(name = "googleId", unique = true, nullable = true)
     private String googleId;
 
+    @Column(name = "isVerifiedMentor")
+    @Builder.Default
+    private Boolean isVerifiedMentor = false;
+
     @CreationTimestamp
     @Column(name = "createdAt", nullable = false, updatable = false)
     private LocalDateTime createdAt;
