@@ -30,6 +30,11 @@
 			"key": "logId",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "sessionId",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -438,7 +443,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"status\": \"SLIP_UP\",\n  \"intensityLevel": 8,\n  \"triggerTag\": \"Boredom & Social Media Scrolling\",\n  \"reflectionNote\": \"Stayed in bed too long with phone.\"\n}"
+					"raw": "{\n  \"status\": \"SLIP_UP\",\n  \"intensityLevel\": 8,\n  \"triggerTag\": \"Boredom & Social Media Scrolling\",\n  \"reflectionNote\": \"Stayed in bed too long with phone.\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs",
@@ -502,6 +507,95 @@
 						"{{chainId}}",
 						"logs",
 						"{{logId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "17. Start Emergency SOS Session",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"chainId\": \"{{chainId}}\",\n  \"sessionType\": \"PHYSICAL_CIRCUIT_BREAKER\",\n  \"cravingBefore\": 9\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/emergency/start",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"emergency",
+						"start"
+					]
+				}
+			}
+		},
+		{
+			"name": "18. Complete Emergency SOS Session",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"cravingAfter\": 3,\n  \"durationSeconds\": 180,\n  \"techniqueUsed\": \"PHYSICAL_LEAVE_ROOM + WUDU_COOL_WATER + BOX_BREATHING_60S\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/emergency/{{sessionId}}/complete",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"emergency",
+						"{{sessionId}}",
+						"complete"
+					]
+				}
+			}
+		},
+		{
+			"name": "19. Get Emergency SOS History",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/emergency/history",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"emergency",
+						"history"
 					]
 				}
 			}
