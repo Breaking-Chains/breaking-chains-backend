@@ -9,3 +9,7 @@ bin/
 *.iws
 *.log
 .DS_Store
+node_modules/
+test-dashboard/
+*.jar
+*.class
