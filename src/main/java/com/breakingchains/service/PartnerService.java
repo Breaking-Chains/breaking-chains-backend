@@ -114,18 +114,23 @@ public class PartnerService {
     public CounselNoteResponse createCounselNote(User currentUser, UUID chainId, CounselNoteRequest request) {
         checkUser(currentUser);
 
-        log.info("Creating counsel note by mentor ID: {} for chain ID: {}", currentUser.getId(), chainId);
+        log.info("Attempting counsel note submission by user ID: {} for chain ID: {}", currentUser.getId(), chainId);
 
         HabitChain chain = habitChainRepository.findById(chainId)
                 .orElseThrow(() -> AppException.notFound("Habit chain not found"));
 
         boolean isChainOwner = chain.getUser().getId().equals(currentUser.getId());
+        if (isChainOwner) {
+            log.warn("Counsel note rejected - user ID: {} is the chain owner of chain ID: {}", currentUser.getId(), chainId);
+            throw AppException.validationError("Counsel notes (Nasiha) can only be submitted by an accepted mentor or partner, not the chain owner.");
+        }
+
         boolean isAcceptedMentor = partnerRepository.existsByHabitChainIdAndPartnerUserIdAndStatus(
                 chainId, currentUser.getId(), PartnershipStatus.ACCEPTED);
 
-        if (!isChainOwner && !isAcceptedMentor) {
+        if (!isAcceptedMentor) {
             log.warn("Unauthorized counsel note attempt by user ID: {} for chain ID: {}", currentUser.getId(), chainId);
-            throw AppException.unauthorized("You are not an authorized mentor for this habit chain");
+            throw AppException.unauthorized("You are not an accepted mentor for this habit chain.");
         }
 
         if (chain.getPrivacyLevel() == PrivacyLevel.LEVEL_0_PRIVATE || chain.getPrivacyLevel() == PrivacyLevel.LEVEL_1_STREAK_ONLY) {
@@ -141,7 +146,7 @@ public class PartnerService {
                 .build();
 
         CounselNote savedNote = counselNoteRepository.save(note);
-        log.info("Counsel note created successfully with ID: {}", savedNote.getId());
+        log.info("Counsel note created successfully with ID: {} by mentor ID: {}", savedNote.getId(), currentUser.getId());
 
         return CounselNoteResponse.fromEntity(savedNote);
     }
