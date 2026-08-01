@@ -25,8 +25,16 @@ public class HabitChainService {
 
     private final HabitChainRepository habitChainRepository;
 
+    private void checkUser(User currentUser) {
+        if (currentUser == null) {
+            throw AppException.unauthorized("Authentication token is missing or invalid. Please log in first.");
+        }
+    }
+
     @Transactional
     public HabitChainResponse createChain(User currentUser, CreateHabitChainRequest request) {
+        checkUser(currentUser);
+
         log.info("Creating new habit chain for user ID: {}, Title: '{}', Category: {}",
                 currentUser.getId(), request.getTitle(), request.getCategory());
 
@@ -77,6 +85,8 @@ public class HabitChainService {
 
     @Transactional(readOnly = true)
     public List<HabitChainResponse> getUserChains(User currentUser, ChainStatus statusFilter) {
+        checkUser(currentUser);
+
         log.debug("Fetching habit chains for user ID: {}, Status Filter: {}", currentUser.getId(), statusFilter);
         List<HabitChain> chains;
         if (statusFilter != null) {
@@ -91,6 +101,8 @@ public class HabitChainService {
 
     @Transactional(readOnly = true)
     public HabitChainResponse getChainById(User currentUser, UUID chainId) {
+        checkUser(currentUser);
+
         log.debug("Fetching habit chain ID: {} for user ID: {}", chainId, currentUser.getId());
         HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
                 .orElseThrow(() -> {
@@ -102,6 +114,8 @@ public class HabitChainService {
 
     @Transactional
     public HabitChainResponse updateChain(User currentUser, UUID chainId, UpdateHabitChainRequest request) {
+        checkUser(currentUser);
+
         log.info("Updating habit chain ID: {} for user ID: {}", chainId, currentUser.getId());
         HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
                 .orElseThrow(() -> {
@@ -153,6 +167,8 @@ public class HabitChainService {
 
     @Transactional
     public void deleteChain(User currentUser, UUID chainId) {
+        checkUser(currentUser);
+
         log.info("Deleting habit chain ID: {} for user ID: {}", chainId, currentUser.getId());
         HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
                 .orElseThrow(() -> {
