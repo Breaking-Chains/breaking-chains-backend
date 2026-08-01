@@ -3,6 +3,7 @@ package com.breakingchains.dto;
 import com.breakingchains.model.ChainStatus;
 import com.breakingchains.model.HabitCategory;
 import com.breakingchains.model.HabitChain;
+import com.breakingchains.model.HabitSubCategory;
 import com.breakingchains.model.PrivacyLevel;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class HabitChainResponse {
     private String title;
     private String description;
     private HabitCategory category;
+    private HabitSubCategory subCategory;
     private PrivacyLevel privacyLevel;
     private ChainStatus status;
     private LocalDateTime targetStartDate;
@@ -41,6 +43,7 @@ public class HabitChainResponse {
                 .title(chain.getTitle())
                 .description(chain.getDescription())
                 .category(chain.getCategory())
+                .subCategory(chain.getSubCategory())
                 .privacyLevel(chain.getPrivacyLevel())
                 .status(chain.getStatus())
                 .targetStartDate(chain.getTargetStartDate())

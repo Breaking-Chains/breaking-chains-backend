@@ -25,6 +25,11 @@
 			"key": "chainId",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "logId",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -260,7 +265,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"title\": \"Quit Vaping\",\n  \"description\": \"Overcoming nicotine addiction through daily mindfulness and substitute breathing.\",\n  \"category\": \"SPIRITUAL_MORAL\",\n  \"privacyLevel\": \"LEVEL_0_PRIVATE\",\n  \"costPerInstance\": 15.50,\n  \"timeMinutesPerInstance\": 30,\n  \"triggerTags\": [\"Stress\", \"Late Night\", \"Social Environment\"],\n  \"substituteAction\": \"Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water\",\n  \"intentStatement\": \"I intend for the sake of Allah to purify my body and soul from harmful dependencies.\"\n}"
+					"raw": "{\n  \"title\": \"Pure Path - Overcome PMO\",\n  \"description\": \"Breaking PMO addiction through daily spiritual purification and urge surfing.\",\n  \"category\": \"SPIRITUAL_MORAL\",\n  \"subCategory\": \"PMO_RECOVERY\",\n  \"privacyLevel\": \"LEVEL_0_PRIVATE\",\n  \"costPerInstance\": 0.00,\n  \"timeMinutesPerInstance\": 45,\n  \"triggerTags\": [\"Late Night in Bed\", \"Boredom\", \"Social Media Scrolling\"],\n  \"substituteAction\": \"Perform Wudu with cool water, pray 2 Raka'at Salat al-Tawbah, and do 2-minute box breathing\",\n  \"intentStatement\": \"I intend for the sake of Allah to purify my eyes, heart, and soul.\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/v1/chains",
@@ -344,7 +349,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"title\": \"Quit Vaping & Nicotine\",\n  \"privacyLevel\": \"LEVEL_1_STREAK_ONLY\",\n  \"status\": \"ACTIVE\",\n  \"costPerInstance\": 20.00\n}"
+					"raw": "{\n  \"title\": \"Pure Path - PMO Recovery\",\n  \"privacyLevel\": \"LEVEL_1_STREAK_ONLY\",\n  \"status\": \"ACTIVE\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}",
@@ -380,6 +385,123 @@
 						"v1",
 						"chains",
 						"{{chainId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "13. Log Daily Check-In (Clean)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"CLEAN\",\n  \"intensityLevel\": 2,\n  \"triggerTag\": \"Late Night in Bed\",\n  \"reflectionNote\": \"Stayed strong by putting phone outside bedroom and making Dhikr before sleep.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"logs"
+					]
+				}
+			}
+		},
+		{
+			"name": "14. Log Daily Check-In (Slip-Up)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"SLIP_UP\",\n  \"intensityLevel": 8,\n  \"triggerTag\": \"Boredom & Social Media Scrolling\",\n  \"reflectionNote\": \"Stayed in bed too long with phone.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"logs"
+					]
+				}
+			}
+		},
+		{
+			"name": "15. Get Chain Check-In Logs",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"logs"
+					]
+				}
+			}
+		},
+		{
+			"name": "16. Delete Check-In Log",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/logs/{{logId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"logs",
+						"{{logId}}"
 					]
 				}
 			}

@@ -2,6 +2,7 @@ package com.breakingchains.dto;
 
 import com.breakingchains.model.ChainStatus;
 import com.breakingchains.model.HabitCategory;
+import com.breakingchains.model.HabitSubCategory;
 import com.breakingchains.model.PrivacyLevel;
 import lombok.*;
 
@@ -21,6 +22,8 @@ public class UpdateHabitChainRequest {
     private String description;
 
     private HabitCategory category;
+
+    private HabitSubCategory subCategory;
 
     private PrivacyLevel privacyLevel;
 

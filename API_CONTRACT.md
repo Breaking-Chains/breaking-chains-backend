@@ -92,41 +92,6 @@ Create a new user account with local credentials.
 - **Method:** `POST`
 - **Path:** `/api/v1/auth/register`
 - **Authentication:** None
-- **Request Body:**
-  ```json
-  {
-    "email": "john.doe@example.com",
-    "password": "Password123!",
-    "fullName": "John Doe",
-    "username": "johndoe"
-  }
-  ```
-
-- **Response `201 Created`:**
-  ```json
-  {
-    "status": "success",
-    "data": {
-      "user": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "email": "john.doe@example.com",
-        "fullName": "John Doe",
-        "username": "johndoe",
-        "avatarUrl": null,
-        "bio": null,
-        "authProvider": "LOCAL",
-        "createdAt": "2026-08-01T07:15:00.000Z",
-        "updatedAt": "2026-08-01T07:15:00.000Z"
-      },
-      "tokens": {
-        "accessToken": "eyJhbGciOi...",
-        "refreshToken": "eyJhbGciOi..."
-      }
-    }
-  }
-  ```
-
----
 
 #### 4.2.2 Login User
 Authenticate using email and password.
@@ -134,39 +99,6 @@ Authenticate using email and password.
 - **Method:** `POST`
 - **Path:** `/api/v1/auth/login`
 - **Authentication:** None
-- **Request Body:**
-  ```json
-  {
-    "email": "john.doe@example.com",
-    "password": "Password123!"
-  }
-  ```
-
-- **Response `200 OK`:**
-  ```json
-  {
-    "status": "success",
-    "data": {
-      "user": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "email": "john.doe@example.com",
-        "fullName": "John Doe",
-        "username": "johndoe",
-        "avatarUrl": null,
-        "bio": null,
-        "authProvider": "LOCAL",
-        "createdAt": "2026-08-01T07:15:00.000Z",
-        "updatedAt": "2026-08-01T07:15:00.000Z"
-      },
-      "tokens": {
-        "accessToken": "eyJhbGciOi...",
-        "refreshToken": "eyJhbGciOi..."
-      }
-    }
-  }
-  ```
-
----
 
 #### 4.2.3 Google Sign-In
 Authenticate or register using Google OAuth2 ID Token from Android app.
@@ -174,14 +106,6 @@ Authenticate or register using Google OAuth2 ID Token from Android app.
 - **Method:** `POST`
 - **Path:** `/api/v1/auth/google`
 - **Authentication:** None
-- **Request Body:**
-  ```json
-  {
-    "idToken": "eyJhbGciOiJSUzI1NiIs..."
-  }
-  ```
-
----
 
 #### 4.2.4 Refresh Access Token
 Obtain a fresh pair of access and refresh tokens using a valid Refresh Token.
@@ -189,38 +113,24 @@ Obtain a fresh pair of access and refresh tokens using a valid Refresh Token.
 - **Method:** `POST`
 - **Path:** `/api/v1/auth/refresh`
 - **Authentication:** None
-- **Request Body:**
-  ```json
-  {
-    "refreshToken": "eyJhbGciOi..."
-  }
-  ```
-
----
 
 #### 4.2.5 Logout User
 Revoke current user token / session.
 
 - **Method:** `POST`
 - **Path:** `/api/v1/auth/logout`
-- **Authentication:** Bearer Token (Optional body with `refreshToken`)
+- **Authentication:** Bearer Token
 
 ---
 
 ### 4.3 User Profile Endpoints (`/api/v1/users`)
 
 #### 4.3.1 Get Current User Profile
-Retrieve profile data for the authenticated user.
-
 - **Method:** `GET`
 - **Path:** `/api/v1/users/me`
 - **Authentication:** `Bearer <accessToken>`
 
----
-
 #### 4.3.2 Update Current User Profile
-Update personal information for the authenticated user.
-
 - **Method:** `PUT`
 - **Path:** `/api/v1/users/me`
 - **Authentication:** `Bearer <accessToken>`
@@ -230,59 +140,102 @@ Update personal information for the authenticated user.
 ### 4.4 Habit Chains Endpoints (`/api/v1/chains`)
 
 #### 4.4.1 Create Habit Chain
-Create a new habit chain with dual classification (`SPIRITUAL_MORAL` vs `LIFESTYLE_PRODUCTIVITY`).
-
 - **Method:** `POST`
 - **Path:** `/api/v1/chains`
 - **Authentication:** `Bearer <accessToken>`
-- **Request Body:**
+
+#### 4.4.2 Get User Habit Chains
+- **Method:** `GET`
+- **Path:** `/api/v1/chains` or `/api/v1/chains?status=ACTIVE`
+- **Authentication:** `Bearer <accessToken>`
+
+#### 4.4.3 Get Single Habit Chain
+- **Method:** `GET`
+- **Path:** `/api/v1/chains/{id}`
+- **Authentication:** `Bearer <accessToken>`
+
+#### 4.4.4 Update Habit Chain
+- **Method:** `PUT`
+- **Path:** `/api/v1/chains/{id}`
+- **Authentication:** `Bearer <accessToken>`
+
+#### 4.4.5 Delete Habit Chain
+- **Method:** `DELETE`
+- **Path:** `/api/v1/chains/{id}`
+- **Authentication:** `Bearer <accessToken>`
+
+---
+
+### 4.5 Check-In & Resilience Endpoints (`/api/v1/chains/{id}/logs`)
+
+#### 4.5.1 Log Daily Check-In
+Record a daily check-in (`CLEAN`, `URGE_RESISTED`, or `SLIP_UP`). Returns real-time resilience metrics and category-specific post-slip guidance.
+
+- **Method:** `POST`
+- **Path:** `/api/v1/chains/{id}/logs`
+- **Authentication:** `Bearer <accessToken>`
+- **Request Body (Clean / Resisted Urge Example):**
   ```json
   {
-    "title": "Quit Vaping",
-    "description": "Overcoming nicotine addiction through daily mindfulness and substitute breathing.",
-    "category": "SPIRITUAL_MORAL",
-    "privacyLevel": "LEVEL_0_PRIVATE",
-    "targetStartDate": "2026-08-01T12:00:00",
-    "costPerInstance": 15.50,
-    "timeMinutesPerInstance": 30,
-    "triggerTags": ["Stress", "Late Night", "Social Environment"],
-    "substituteAction": "Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water",
-    "intentStatement": "I intend for the sake of Allah to purify my body and soul from harmful dependencies."
+    "status": "CLEAN",
+    "intensityLevel": 2,
+    "triggerTag": "Late Night in Bed",
+    "reflectionNote": "Resisted urge by doing Wudu and box breathing."
   }
   ```
 
-- **Response `201 Created`:**
+- **Request Body (Slip-Up Example):**
+  ```json
+  {
+    "status": "SLIP_UP",
+    "intensityLevel": 8,
+    "triggerTag": "Boredom & Social Media Scrolling",
+    "reflectionNote": "Stayed in bed too long with phone."
+  }
+  ```
+
+- **Response `201 Created` (with PMO/Spiritual Post-Slip Guidance Payload):**
   ```json
   {
     "status": "success",
-    "message": "Habit chain created successfully",
+    "message": "Check-in logged successfully",
     "data": {
-      "id": "c0a80069-9fb9-1430-819f-b97453210000",
+      "id": "f8a7b6c5-d4e3-2109-8765-432109876543",
+      "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
       "userId": "550e8400-e29b-41d4-a716-446655440000",
-      "title": "Quit Vaping",
-      "description": "Overcoming nicotine addiction through daily mindfulness and substitute breathing.",
-      "category": "SPIRITUAL_MORAL",
-      "privacyLevel": "LEVEL_0_PRIVATE",
-      "status": "ACTIVE",
-      "targetStartDate": "2026-08-01T12:00:00",
-      "costPerInstance": 15.50,
-      "timeMinutesPerInstance": 30,
-      "triggerTags": ["Stress", "Late Night", "Social Environment"],
-      "substituteAction": "Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water",
-      "intentStatement": "I intend for the sake of Allah to purify my body and soul from harmful dependencies.",
-      "createdAt": "2026-08-01T12:00:00",
-      "updatedAt": "2026-08-01T12:00:00"
+      "logTimestamp": "2026-08-01T12:00:00",
+      "status": "SLIP_UP",
+      "intensityLevel": 8,
+      "triggerTag": "Boredom & Social Media Scrolling",
+      "reflectionNote": "Stayed in bed too long with phone.",
+      "goodDeedDone": null,
+      "chaserAlertActive": true,
+      "currentStreakDays": 0,
+      "longestStreakDays": 14,
+      "totalCleanDays": 14,
+      "totalDays": 15,
+      "resilienceScore": 93.33,
+      "postSlipGuidance": {
+        "title": "Renew Your Intent (Niyyah) & Stand Up Immediately",
+        "subtitle": "A slip is a temporary detour, not an identity collapse. Turn to Allah right now with hope.",
+        "spiritualRemind": "O My servants who have transgressed against themselves, do not despair of the mercy of Allah. Indeed, Allah forgives all sins. (Surah Az-Zumar 39:53)",
+        "immediateAction": "1. Leave your bed/room immediately.\n2. Perform Wudu with cool water.\n3. Pray 2 Raka'at Salat al-Tawbah.",
+        "charitySuggestion": "Donate $1 to $5 as Sadaqah to erase this mistake with a good deed (Al-Hasanat yudhibna al-sayyi'at).",
+        "chaserEffectWarning": "⚠️ 48-Hour Chaser-Effect Caution: Dopamine levels are depleted right now. Urges will peak over the next 48 hours. Keep your environment clean and leave your phone outside your bedroom tonight.",
+        "routineSwapSuggestion": "Substitute Routine: Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water"
+      },
+      "createdAt": "2026-08-01T12:00:00"
     }
   }
   ```
 
 ---
 
-#### 4.4.2 Get User Habit Chains
-List all habit chains for the logged-in user. Optional `status` filter query parameter (`ACTIVE`, `ARCHIVED`, `GRADUATED`).
+#### 4.5.2 Get Chain Check-In Logs
+Retrieve chronological log entries for a habit chain.
 
 - **Method:** `GET`
-- **Path:** `/api/v1/chains` or `/api/v1/chains?status=ACTIVE`
+- **Path:** `/api/v1/chains/{id}/logs`
 - **Authentication:** `Bearer <accessToken>`
 - **Response `200 OK`:**
   ```json
@@ -290,21 +243,16 @@ List all habit chains for the logged-in user. Optional `status` filter query par
     "status": "success",
     "data": [
       {
-        "id": "c0a80069-9fb9-1430-819f-b97453210000",
+        "id": "f8a7b6c5-d4e3-2109-8765-432109876543",
+        "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
         "userId": "550e8400-e29b-41d4-a716-446655440000",
-        "title": "Quit Vaping",
-        "description": "Overcoming nicotine addiction through daily mindfulness and substitute breathing.",
-        "category": "SPIRITUAL_MORAL",
-        "privacyLevel": "LEVEL_0_PRIVATE",
-        "status": "ACTIVE",
-        "targetStartDate": "2026-08-01T12:00:00",
-        "costPerInstance": 15.50,
-        "timeMinutesPerInstance": 30,
-        "triggerTags": ["Stress", "Late Night", "Social Environment"],
-        "substituteAction": "Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water",
-        "intentStatement": "I intend for the sake of Allah to purify my body and soul from harmful dependencies.",
-        "createdAt": "2026-08-01T12:00:00",
-        "updatedAt": "2026-08-01T12:00:00"
+        "logTimestamp": "2026-08-01T12:00:00",
+        "status": "CLEAN",
+        "intensityLevel": 2,
+        "triggerTag": "Late Night in Bed",
+        "reflectionNote": "Resisted urge by doing Wudu and box breathing.",
+        "chaserAlertActive": false,
+        "createdAt": "2026-08-01T12:00:00"
       }
     ]
   }
@@ -312,79 +260,17 @@ List all habit chains for the logged-in user. Optional `status` filter query par
 
 ---
 
-#### 4.4.3 Get Single Habit Chain
-Retrieve details for a specific habit chain owned by the authenticated user.
-
-- **Method:** `GET`
-- **Path:** `/api/v1/chains/{id}`
-- **Authentication:** `Bearer <accessToken>`
-- **Response `200 OK`:**
-  ```json
-  {
-    "status": "success",
-    "data": {
-      "id": "c0a80069-9fb9-1430-819f-b97453210000",
-      "userId": "550e8400-e29b-41d4-a716-446655440000",
-      "title": "Quit Vaping",
-      "description": "Overcoming nicotine addiction through daily mindfulness and substitute breathing.",
-      "category": "SPIRITUAL_MORAL",
-      "privacyLevel": "LEVEL_0_PRIVATE",
-      "status": "ACTIVE",
-      "targetStartDate": "2026-08-01T12:00:00",
-      "costPerInstance": 15.50,
-      "timeMinutesPerInstance": 30,
-      "triggerTags": ["Stress", "Late Night"],
-      "substituteAction": "Perform 2 Raka'at Prayer / 2-minute Box Breathing",
-      "intentStatement": "I intend for the sake of Allah to purify my body and soul.",
-      "createdAt": "2026-08-01T12:00:00",
-      "updatedAt": "2026-08-01T12:00:00"
-    }
-  }
-  ```
-
-- **Error Responses:**
-  - `404 Not Found` (`NOT_FOUND`) if chain does not exist or belongs to another user.
-
----
-
-#### 4.4.4 Update Habit Chain
-Update metadata, category, privacy level, status, or triggers for a habit chain.
-
-- **Method:** `PUT`
-- **Path:** `/api/v1/chains/{id}`
-- **Authentication:** `Bearer <accessToken>`
-- **Request Body:**
-  ```json
-  {
-    "title": "Quit Vaping & Nicotine",
-    "privacyLevel": "LEVEL_1_STREAK_ONLY",
-    "status": "ACTIVE",
-    "costPerInstance": 20.00
-  }
-  ```
-
-- **Response `200 OK`:**
-  ```json
-  {
-    "status": "success",
-    "message": "Habit chain updated successfully",
-    "data": { ... }
-  }
-  ```
-
----
-
-#### 4.4.5 Delete Habit Chain
-Delete a habit chain. Cascades via PostgreSQL foreign keys to purge all dependent logs, SOS sessions, and notes with zero orphaned records.
+#### 4.5.3 Delete Check-In Log
+Delete a specific check-in log entry.
 
 - **Method:** `DELETE`
-- **Path:** `/api/v1/chains/{id}`
+- **Path:** `/api/v1/chains/{id}/logs/{logId}`
 - **Authentication:** `Bearer <accessToken>`
 - **Response `200 OK`:**
   ```json
   {
     "status": "success",
-    "message": "Habit chain deleted successfully",
+    "message": "Check-in log deleted successfully",
     "data": null
   }
   ```

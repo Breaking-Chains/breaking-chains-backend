@@ -50,6 +50,11 @@ public class HabitChain {
     private HabitCategory category;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "sub_category", nullable = false)
+    @Builder.Default
+    private HabitSubCategory subCategory = HabitSubCategory.GENERAL_HABIT;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "privacy_level", nullable = false)
     @Builder.Default
     private PrivacyLevel privacyLevel = PrivacyLevel.LEVEL_0_PRIVATE;

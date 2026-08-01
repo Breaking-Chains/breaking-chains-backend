@@ -4,10 +4,7 @@ import com.breakingchains.dto.CreateHabitChainRequest;
 import com.breakingchains.dto.HabitChainResponse;
 import com.breakingchains.dto.UpdateHabitChainRequest;
 import com.breakingchains.exception.AppException;
-import com.breakingchains.model.ChainStatus;
-import com.breakingchains.model.HabitChain;
-import com.breakingchains.model.PrivacyLevel;
-import com.breakingchains.model.User;
+import com.breakingchains.model.*;
 import com.breakingchains.repository.HabitChainRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +34,10 @@ public class HabitChainService {
                 ? request.getTargetStartDate() 
                 : LocalDateTime.now();
 
+        HabitSubCategory subCategory = request.getSubCategory() != null 
+                ? request.getSubCategory() 
+                : HabitSubCategory.GENERAL_HABIT;
+
         PrivacyLevel privacy = request.getPrivacyLevel() != null 
                 ? request.getPrivacyLevel() 
                 : PrivacyLevel.LEVEL_0_PRIVATE;
@@ -58,6 +59,7 @@ public class HabitChainService {
                 .title(request.getTitle().trim())
                 .description(request.getDescription() != null ? request.getDescription().trim() : null)
                 .category(request.getCategory())
+                .subCategory(subCategory)
                 .privacyLevel(privacy)
                 .status(ChainStatus.ACTIVE)
                 .targetStartDate(startDate)
@@ -115,6 +117,9 @@ public class HabitChainService {
         }
         if (request.getCategory() != null) {
             chain.setCategory(request.getCategory());
+        }
+        if (request.getSubCategory() != null) {
+            chain.setSubCategory(request.getSubCategory());
         }
         if (request.getPrivacyLevel() != null) {
             chain.setPrivacyLevel(request.getPrivacyLevel());

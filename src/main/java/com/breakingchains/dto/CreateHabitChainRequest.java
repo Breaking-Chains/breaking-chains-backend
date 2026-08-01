@@ -1,6 +1,7 @@
 package com.breakingchains.dto;
 
 import com.breakingchains.model.HabitCategory;
+import com.breakingchains.model.HabitSubCategory;
 import com.breakingchains.model.PrivacyLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,8 @@ public class CreateHabitChainRequest {
 
     @NotNull(message = "Category is required")
     private HabitCategory category;
+
+    private HabitSubCategory subCategory;
 
     private PrivacyLevel privacyLevel;
 
