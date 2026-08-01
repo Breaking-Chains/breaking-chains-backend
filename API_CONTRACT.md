@@ -88,7 +88,7 @@ Authorization: Bearer <accessToken>
 - `DELETE /api/v1/chains/{id}` | Delete chain (Cascades ON DELETE CASCADE)
 
 ### 4.5 Check-In & Resilience Endpoints (`/api/v1/chains/{id}/logs`)
-- `POST /api/v1/chains/{id}/logs` | Submit check-in log (`CLEAN`, `URGE_RESISTED`, `SLIP_UP`)
+- `POST /api/v1/chains/{id}/logs` | Submit check-in log (`CLEAN`, `URGE_RESISTED`, `PEEKED_EDGED`, `SLIP_UP`)
 - `GET /api/v1/chains/{id}/logs` | Get check-in history
 - `DELETE /api/v1/chains/{id}/logs/{logId}` | Delete log entry
 
@@ -117,8 +117,6 @@ Authorization: Bearer <accessToken>
 - `GET /api/v1/chains/{id}/counsel-notes`
 
 #### 4.7.6 Send 2-Way Mentorship Chat Message
-Send a direct message in an active mentorship partnership thread between student and mentor.
-
 - **Method:** `POST`
 - **Path:** `/api/v1/partnerships/{partnershipId}/messages`
 - **Authentication:** `Bearer <accessToken>`
@@ -147,11 +145,7 @@ Send a direct message in an active mentorship partnership thread between student
   }
   ```
 
----
-
 #### 4.7.7 Get 2-Way Mentorship Chat History
-Retrieve all chat messages in a partnership thread (in chronological order) and automatically mark incoming messages as read.
-
 - **Method:** `GET`
 - **Path:** `/api/v1/partnerships/{partnershipId}/messages`
 - **Authentication:** `Bearer <accessToken>`
@@ -179,3 +173,98 @@ Retrieve all chat messages in a partnership thread (in chronological order) and 
 ### 4.8 Analytics, Milestones & Barakah Endpoints
 - `GET /api/v1/chains/{id}/analytics`
 - `GET /api/v1/milestones`
+
+---
+
+### 4.9 Verified Mentor Registration & Verification Endpoints (`/api/v1/mentors`)
+
+#### 4.9.1 Register as a Mentor
+Submit a registration application to become a verified spiritual counselor or recovery mentor.
+
+- **Method:** `POST`
+- **Path:** `/api/v1/mentors/register`
+- **Authentication:** `Bearer <accessToken>`
+- **Request Body:**
+  ```json
+  {
+    "qualification": "Alimiyyah Degree in Islamic Studies",
+    "specialization": "Spiritual Counsel (Tazkiyah)",
+    "yearsOfExperience": 5,
+    "organization": "Al-Hikmah Youth Center",
+    "bio": "Experienced spiritual guide specializing in heart purity and recovery support.",
+    "autoApprove": false
+  }
+  ```
+
+- **Response `201 Created`:**
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "e4f3d2c1-b0a9-8765-fedc-4321098765ba",
+      "userId": "c0a80069-9fb9-1430-819f-b97453210000",
+      "fullName": "Sheikh Ahmad",
+      "username": "sheikh_ahmad",
+      "avatarUrl": null,
+      "qualification": "Alimiyyah Degree in Islamic Studies",
+      "specialization": "Spiritual Counsel (Tazkiyah)",
+      "yearsOfExperience": 5,
+      "organization": "Al-Hikmah Youth Center",
+      "bio": "Experienced spiritual guide specializing in heart purity and recovery support.",
+      "status": "PENDING",
+      "isVerified": false,
+      "createdAt": "2026-08-01T17:50:00"
+    }
+  }
+  ```
+
+#### 4.9.2 Get My Mentor Profile
+Retrieve the authenticated user's mentor registration profile and status.
+
+- **Method:** `GET`
+- **Path:** `/api/v1/mentors/me`
+- **Authentication:** `Bearer <accessToken>`
+- **Response `200 OK`:**
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "e4f3d2c1-b0a9-8765-fedc-4321098765ba",
+      "userId": "c0a80069-9fb9-1430-819f-b97453210000",
+      "fullName": "Sheikh Ahmad",
+      "username": "sheikh_ahmad",
+      "status": "APPROVED",
+      "isVerified": true
+    }
+  }
+  ```
+
+#### 4.9.3 Get Verified Mentors Directory
+Retrieve all active verified mentors (`status: APPROVED`).
+
+- **Method:** `GET`
+- **Path:** `/api/v1/mentors/verified`
+- **Authentication:** `Bearer <accessToken>`
+- **Response `200 OK`:** Returns array of verified `MentorProfileResponse` objects.
+
+#### 4.9.4 Get All Mentor Applications (Admin / Dev)
+Retrieve all submitted mentor registration applications.
+
+- **Method:** `GET`
+- **Path:** `/api/v1/mentors/applications`
+- **Authentication:** `Bearer <accessToken>`
+- **Response `200 OK`:** Returns array of all `MentorProfileResponse` objects.
+
+#### 4.9.5 Update Mentor Application Status (Admin / Dev)
+Approve or reject a mentor registration application. Approving sets `user.isVerifiedMentor = true`.
+
+- **Method:** `PUT`
+- **Path:** `/api/v1/mentors/applications/{profileId}/status`
+- **Authentication:** `Bearer <accessToken>`
+- **Request Body:**
+  ```json
+  {
+    "status": "APPROVED"
+  }
+  ```
+- **Response `200 OK`:** Returns updated `MentorProfileResponse` object.

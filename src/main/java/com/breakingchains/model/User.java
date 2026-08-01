@@ -52,7 +52,7 @@ public class User {
     @Column(name = "googleId", unique = true, nullable = true)
     private String googleId;
 
-    @Column(name = "isVerifiedMentor", nullable = false)
+    @Column(name = "isVerifiedMentor")
     @Builder.Default
     private Boolean isVerifiedMentor = false;
 
