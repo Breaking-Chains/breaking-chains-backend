@@ -40,11 +40,15 @@ All API endpoints return JSON wrapped in a consistent structure.
 | HTTP Status | Error Code | Description |
 | :--- | :--- | :--- |
 | `400 Bad Request` | `VALIDATION_ERROR` | Request body failed Jakarta `@Valid` constraints or payload parameter rules. |
+| `400 Bad Request` | `MALFORMED_JSON` | Required request body is missing or contains malformed JSON. |
+| `400 Bad Request` | `INVALID_PARAMETER` | Path variable or parameter type mismatch (e.g. invalid UUID format). |
 | `401 Unauthorized` | `INVALID_CREDENTIALS` | Incorrect email or password provided during login. |
 | `401 Unauthorized` | `UNAUTHORIZED` | Missing, malformed, or expired JWT Access Token in `Authorization` header. |
 | `401 Unauthorized` | `TOKEN_EXPIRED` | JWT Access Token has expired. |
 | `401 Unauthorized` | `INVALID_REFRESH_TOKEN` | Refresh Token is invalid, expired, or corrupted. |
+| `403 Forbidden` | `FORBIDDEN` | Authenticated user lacks permission to access target resource. |
 | `404 Not Found` | `NOT_FOUND` | Requested user or resource does not exist. |
+| `405 Method Not Allowed` | `METHOD_NOT_ALLOWED` | HTTP method not supported for target URI. |
 | `409 Conflict` | `USER_EXISTS` | Email or username already registered in the system. |
 | `500 Server Error` | `INTERNAL_SERVER_ERROR` | Unhandled internal server exception. |
 
@@ -97,11 +101,6 @@ Create a new user account with local credentials.
     "username": "johndoe"
   }
   ```
-  *Validation Rules:*
-  - `email`: Required, valid email format.
-  - `password`: Required, minimum 8 characters.
-  - `fullName`: Required, non-blank.
-  - `username`: Required, non-blank.
 
 - **Response `201 Created`:**
   ```json
@@ -126,10 +125,6 @@ Create a new user account with local credentials.
     }
   }
   ```
-
-- **Error Responses:**
-  - `400 Bad Request` (`VALIDATION_ERROR`)
-  - `409 Conflict` (`USER_EXISTS`)
 
 ---
 
@@ -171,10 +166,6 @@ Authenticate using email and password.
   }
   ```
 
-- **Error Responses:**
-  - `400 Bad Request` (`VALIDATION_ERROR`)
-  - `401 Unauthorized` (`INVALID_CREDENTIALS`)
-
 ---
 
 #### 4.2.3 Google Sign-In
@@ -189,33 +180,6 @@ Authenticate or register using Google OAuth2 ID Token from Android app.
     "idToken": "eyJhbGciOiJSUzI1NiIs..."
   }
   ```
-
-- **Response `200 OK`:**
-  ```json
-  {
-    "status": "success",
-    "data": {
-      "user": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "email": "john.doe@gmail.com",
-        "fullName": "John Doe",
-        "username": "john_doe_gmail_com",
-        "avatarUrl": "https://lh3.googleusercontent.com/a/...",
-        "bio": null,
-        "authProvider": "GOOGLE",
-        "createdAt": "2026-08-01T07:15:00.000Z",
-        "updatedAt": "2026-08-01T07:15:00.000Z"
-      },
-      "tokens": {
-        "accessToken": "eyJhbGciOi...",
-        "refreshToken": "eyJhbGciOi..."
-      }
-    }
-  }
-  ```
-
-- **Error Responses:**
-  - `401 Unauthorized` (`UNAUTHORIZED` / `INVALID_TOKEN`)
 
 ---
 
@@ -232,20 +196,6 @@ Obtain a fresh pair of access and refresh tokens using a valid Refresh Token.
   }
   ```
 
-- **Response `200 OK`:**
-  ```json
-  {
-    "status": "success",
-    "data": {
-      "accessToken": "eyJhbGciOi...",
-      "refreshToken": "eyJhbGciOi..."
-    }
-  }
-  ```
-
-- **Error Responses:**
-  - `401 Unauthorized` (`INVALID_REFRESH_TOKEN`)
-
 ---
 
 #### 4.2.5 Logout User
@@ -253,21 +203,7 @@ Revoke current user token / session.
 
 - **Method:** `POST`
 - **Path:** `/api/v1/auth/logout`
-- **Authentication:** None (Optional body with `refreshToken`)
-- **Request Body (Optional):**
-  ```json
-  {
-    "refreshToken": "eyJhbGciOi..."
-  }
-  ```
-
-- **Response `200 OK`:**
-  ```json
-  {
-    "status": "success",
-    "message": "Logged out successfully"
-  }
-  ```
+- **Authentication:** Bearer Token (Optional body with `refreshToken`)
 
 ---
 
@@ -279,28 +215,6 @@ Retrieve profile data for the authenticated user.
 - **Method:** `GET`
 - **Path:** `/api/v1/users/me`
 - **Authentication:** `Bearer <accessToken>`
-- **Response `200 OK`:**
-  ```json
-  {
-    "status": "success",
-    "data": {
-      "user": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "email": "john.doe@example.com",
-        "fullName": "John Doe",
-        "username": "johndoe",
-        "avatarUrl": "https://example.com/avatar.jpg",
-        "bio": "Overcoming obstacles every day.",
-        "authProvider": "LOCAL",
-        "createdAt": "2026-08-01T07:15:00.000Z",
-        "updatedAt": "2026-08-01T07:15:00.000Z"
-      }
-    }
-  }
-  ```
-
-- **Error Responses:**
-  - `401 Unauthorized` (`UNAUTHORIZED`)
 
 ---
 
@@ -310,37 +224,167 @@ Update personal information for the authenticated user.
 - **Method:** `PUT`
 - **Path:** `/api/v1/users/me`
 - **Authentication:** `Bearer <accessToken>`
+
+---
+
+### 4.4 Habit Chains Endpoints (`/api/v1/chains`)
+
+#### 4.4.1 Create Habit Chain
+Create a new habit chain with dual classification (`SPIRITUAL_MORAL` vs `LIFESTYLE_PRODUCTIVITY`).
+
+- **Method:** `POST`
+- **Path:** `/api/v1/chains`
+- **Authentication:** `Bearer <accessToken>`
 - **Request Body:**
   ```json
   {
-    "fullName": "John Updated Doe",
-    "username": "john_updated",
-    "bio": "New bio description.",
-    "avatarUrl": "https://example.com/new-avatar.jpg"
+    "title": "Quit Vaping",
+    "description": "Overcoming nicotine addiction through daily mindfulness and substitute breathing.",
+    "category": "SPIRITUAL_MORAL",
+    "privacyLevel": "LEVEL_0_PRIVATE",
+    "targetStartDate": "2026-08-01T12:00:00",
+    "costPerInstance": 15.50,
+    "timeMinutesPerInstance": 30,
+    "triggerTags": ["Stress", "Late Night", "Social Environment"],
+    "substituteAction": "Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water",
+    "intentStatement": "I intend for the sake of Allah to purify my body and soul from harmful dependencies."
   }
   ```
-  *Note:* All fields are optional.
 
+- **Response `201 Created`:**
+  ```json
+  {
+    "status": "success",
+    "message": "Habit chain created successfully",
+    "data": {
+      "id": "c0a80069-9fb9-1430-819f-b97453210000",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Quit Vaping",
+      "description": "Overcoming nicotine addiction through daily mindfulness and substitute breathing.",
+      "category": "SPIRITUAL_MORAL",
+      "privacyLevel": "LEVEL_0_PRIVATE",
+      "status": "ACTIVE",
+      "targetStartDate": "2026-08-01T12:00:00",
+      "costPerInstance": 15.50,
+      "timeMinutesPerInstance": 30,
+      "triggerTags": ["Stress", "Late Night", "Social Environment"],
+      "substituteAction": "Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water",
+      "intentStatement": "I intend for the sake of Allah to purify my body and soul from harmful dependencies.",
+      "createdAt": "2026-08-01T12:00:00",
+      "updatedAt": "2026-08-01T12:00:00"
+    }
+  }
+  ```
+
+---
+
+#### 4.4.2 Get User Habit Chains
+List all habit chains for the logged-in user. Optional `status` filter query parameter (`ACTIVE`, `ARCHIVED`, `GRADUATED`).
+
+- **Method:** `GET`
+- **Path:** `/api/v1/chains` or `/api/v1/chains?status=ACTIVE`
+- **Authentication:** `Bearer <accessToken>`
+- **Response `200 OK`:**
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": "c0a80069-9fb9-1430-819f-b97453210000",
+        "userId": "550e8400-e29b-41d4-a716-446655440000",
+        "title": "Quit Vaping",
+        "description": "Overcoming nicotine addiction through daily mindfulness and substitute breathing.",
+        "category": "SPIRITUAL_MORAL",
+        "privacyLevel": "LEVEL_0_PRIVATE",
+        "status": "ACTIVE",
+        "targetStartDate": "2026-08-01T12:00:00",
+        "costPerInstance": 15.50,
+        "timeMinutesPerInstance": 30,
+        "triggerTags": ["Stress", "Late Night", "Social Environment"],
+        "substituteAction": "Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water",
+        "intentStatement": "I intend for the sake of Allah to purify my body and soul from harmful dependencies.",
+        "createdAt": "2026-08-01T12:00:00",
+        "updatedAt": "2026-08-01T12:00:00"
+      }
+    ]
+  }
+  ```
+
+---
+
+#### 4.4.3 Get Single Habit Chain
+Retrieve details for a specific habit chain owned by the authenticated user.
+
+- **Method:** `GET`
+- **Path:** `/api/v1/chains/{id}`
+- **Authentication:** `Bearer <accessToken>`
 - **Response `200 OK`:**
   ```json
   {
     "status": "success",
     "data": {
-      "user": {
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "email": "john.doe@example.com",
-        "fullName": "John Updated Doe",
-        "username": "john_updated",
-        "avatarUrl": "https://example.com/new-avatar.jpg",
-        "bio": "New bio description.",
-        "authProvider": "LOCAL",
-        "createdAt": "2026-08-01T07:15:00.000Z",
-        "updatedAt": "2026-08-01T07:20:00.000Z"
-      }
+      "id": "c0a80069-9fb9-1430-819f-b97453210000",
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Quit Vaping",
+      "description": "Overcoming nicotine addiction through daily mindfulness and substitute breathing.",
+      "category": "SPIRITUAL_MORAL",
+      "privacyLevel": "LEVEL_0_PRIVATE",
+      "status": "ACTIVE",
+      "targetStartDate": "2026-08-01T12:00:00",
+      "costPerInstance": 15.50,
+      "timeMinutesPerInstance": 30,
+      "triggerTags": ["Stress", "Late Night"],
+      "substituteAction": "Perform 2 Raka'at Prayer / 2-minute Box Breathing",
+      "intentStatement": "I intend for the sake of Allah to purify my body and soul.",
+      "createdAt": "2026-08-01T12:00:00",
+      "updatedAt": "2026-08-01T12:00:00"
     }
   }
   ```
 
 - **Error Responses:**
-  - `401 Unauthorized` (`UNAUTHORIZED`)
-  - `409 Conflict` (`USER_EXISTS`)
+  - `404 Not Found` (`NOT_FOUND`) if chain does not exist or belongs to another user.
+
+---
+
+#### 4.4.4 Update Habit Chain
+Update metadata, category, privacy level, status, or triggers for a habit chain.
+
+- **Method:** `PUT`
+- **Path:** `/api/v1/chains/{id}`
+- **Authentication:** `Bearer <accessToken>`
+- **Request Body:**
+  ```json
+  {
+    "title": "Quit Vaping & Nicotine",
+    "privacyLevel": "LEVEL_1_STREAK_ONLY",
+    "status": "ACTIVE",
+    "costPerInstance": 20.00
+  }
+  ```
+
+- **Response `200 OK`:**
+  ```json
+  {
+    "status": "success",
+    "message": "Habit chain updated successfully",
+    "data": { ... }
+  }
+  ```
+
+---
+
+#### 4.4.5 Delete Habit Chain
+Delete a habit chain. Cascades via PostgreSQL foreign keys to purge all dependent logs, SOS sessions, and notes with zero orphaned records.
+
+- **Method:** `DELETE`
+- **Path:** `/api/v1/chains/{id}`
+- **Authentication:** `Bearer <accessToken>`
+- **Response `200 OK`:**
+  ```json
+  {
+    "status": "success",
+    "message": "Habit chain deleted successfully",
+    "data": null
+  }
+  ```

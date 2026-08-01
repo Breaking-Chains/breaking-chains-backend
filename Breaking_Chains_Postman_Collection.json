@@ -20,6 +20,11 @@
 			"key": "refreshToken",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "chainId",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -235,6 +240,146 @@
 						"v1",
 						"auth",
 						"logout"
+					]
+				}
+			}
+		},
+		{
+			"name": "8. Create Habit Chain",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"title\": \"Quit Vaping\",\n  \"description\": \"Overcoming nicotine addiction through daily mindfulness and substitute breathing.\",\n  \"category\": \"SPIRITUAL_MORAL\",\n  \"privacyLevel\": \"LEVEL_0_PRIVATE\",\n  \"costPerInstance\": 15.50,\n  \"timeMinutesPerInstance\": 30,\n  \"triggerTags\": [\"Stress\", \"Late Night\", \"Social Environment\"],\n  \"substituteAction\": \"Perform 2 Raka'at Prayer / 2-minute Box Breathing and drink cold water\",\n  \"intentStatement\": \"I intend for the sake of Allah to purify my body and soul from harmful dependencies.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains"
+					]
+				}
+			}
+		},
+		{
+			"name": "9. Get All Habit Chains",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains?status=ACTIVE",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "ACTIVE"
+						}
+					]
+				}
+			}
+		},
+		{
+			"name": "10. Get Habit Chain by ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "11. Update Habit Chain",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"title\": \"Quit Vaping & Nicotine\",\n  \"privacyLevel\": \"LEVEL_1_STREAK_ONLY\",\n  \"status\": \"ACTIVE\",\n  \"costPerInstance\": 20.00\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "12. Delete Habit Chain",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}"
 					]
 				}
 			}

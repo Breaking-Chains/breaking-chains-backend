@@ -1,0 +1,160 @@
+package com.breakingchains.service;
+
+import com.breakingchains.dto.CreateHabitChainRequest;
+import com.breakingchains.dto.HabitChainResponse;
+import com.breakingchains.dto.UpdateHabitChainRequest;
+import com.breakingchains.exception.AppException;
+import com.breakingchains.model.ChainStatus;
+import com.breakingchains.model.HabitChain;
+import com.breakingchains.model.PrivacyLevel;
+import com.breakingchains.model.User;
+import com.breakingchains.repository.HabitChainRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class HabitChainService {
+
+    private final HabitChainRepository habitChainRepository;
+
+    @Transactional
+    public HabitChainResponse createChain(User currentUser, CreateHabitChainRequest request) {
+        log.info("Creating new habit chain for user ID: {}, Title: '{}', Category: {}",
+                currentUser.getId(), request.getTitle(), request.getCategory());
+
+        LocalDateTime startDate = request.getTargetStartDate() != null 
+                ? request.getTargetStartDate() 
+                : LocalDateTime.now();
+
+        PrivacyLevel privacy = request.getPrivacyLevel() != null 
+                ? request.getPrivacyLevel() 
+                : PrivacyLevel.LEVEL_0_PRIVATE;
+
+        BigDecimal cost = request.getCostPerInstance() != null 
+                ? request.getCostPerInstance() 
+                : BigDecimal.ZERO;
+
+        Integer minutes = request.getTimeMinutesPerInstance() != null 
+                ? request.getTimeMinutesPerInstance() 
+                : 0;
+
+        List<String> triggers = request.getTriggerTags() != null 
+                ? request.getTriggerTags() 
+                : new ArrayList<>();
+
+        HabitChain chain = HabitChain.builder()
+                .user(currentUser)
+                .title(request.getTitle().trim())
+                .description(request.getDescription() != null ? request.getDescription().trim() : null)
+                .category(request.getCategory())
+                .privacyLevel(privacy)
+                .status(ChainStatus.ACTIVE)
+                .targetStartDate(startDate)
+                .costPerInstance(cost)
+                .timeMinutesPerInstance(minutes)
+                .triggerTags(triggers)
+                .substituteAction(request.getSubstituteAction() != null ? request.getSubstituteAction().trim() : null)
+                .intentStatement(request.getIntentStatement() != null ? request.getIntentStatement().trim() : null)
+                .build();
+
+        HabitChain savedChain = habitChainRepository.save(chain);
+        log.info("Habit chain created successfully with ID: {} for user ID: {}", savedChain.getId(), currentUser.getId());
+        return HabitChainResponse.fromEntity(savedChain);
+    }
+
+    @Transactional(readOnly = true)
+    public List<HabitChainResponse> getUserChains(User currentUser, ChainStatus statusFilter) {
+        log.debug("Fetching habit chains for user ID: {}, Status Filter: {}", currentUser.getId(), statusFilter);
+        List<HabitChain> chains;
+        if (statusFilter != null) {
+            chains = habitChainRepository.findByUserIdAndStatusOrderByCreatedAtDesc(currentUser.getId(), statusFilter);
+        } else {
+            chains = habitChainRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
+        }
+        return chains.stream()
+                .map(HabitChainResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public HabitChainResponse getChainById(User currentUser, UUID chainId) {
+        log.debug("Fetching habit chain ID: {} for user ID: {}", chainId, currentUser.getId());
+        HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
+                .orElseThrow(() -> {
+                    log.warn("Habit chain ID: {} not found for user ID: {}", chainId, currentUser.getId());
+                    return AppException.notFound("Habit chain not found");
+                });
+        return HabitChainResponse.fromEntity(chain);
+    }
+
+    @Transactional
+    public HabitChainResponse updateChain(User currentUser, UUID chainId, UpdateHabitChainRequest request) {
+        log.info("Updating habit chain ID: {} for user ID: {}", chainId, currentUser.getId());
+        HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
+                .orElseThrow(() -> {
+                    log.warn("Habit chain update failed - ID: {} not found for user ID: {}", chainId, currentUser.getId());
+                    return AppException.notFound("Habit chain not found");
+                });
+
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            chain.setTitle(request.getTitle().trim());
+        }
+        if (request.getDescription() != null) {
+            chain.setDescription(request.getDescription().trim());
+        }
+        if (request.getCategory() != null) {
+            chain.setCategory(request.getCategory());
+        }
+        if (request.getPrivacyLevel() != null) {
+            chain.setPrivacyLevel(request.getPrivacyLevel());
+        }
+        if (request.getStatus() != null) {
+            chain.setStatus(request.getStatus());
+        }
+        if (request.getTargetStartDate() != null) {
+            chain.setTargetStartDate(request.getTargetStartDate());
+        }
+        if (request.getCostPerInstance() != null) {
+            chain.setCostPerInstance(request.getCostPerInstance());
+        }
+        if (request.getTimeMinutesPerInstance() != null) {
+            chain.setTimeMinutesPerInstance(request.getTimeMinutesPerInstance());
+        }
+        if (request.getTriggerTags() != null) {
+            chain.setTriggerTags(request.getTriggerTags());
+        }
+        if (request.getSubstituteAction() != null) {
+            chain.setSubstituteAction(request.getSubstituteAction().trim());
+        }
+        if (request.getIntentStatement() != null) {
+            chain.setIntentStatement(request.getIntentStatement().trim());
+        }
+
+        HabitChain updatedChain = habitChainRepository.save(chain);
+        log.info("Habit chain ID: {} updated successfully", chainId);
+        return HabitChainResponse.fromEntity(updatedChain);
+    }
+
+    @Transactional
+    public void deleteChain(User currentUser, UUID chainId) {
+        log.info("Deleting habit chain ID: {} for user ID: {}", chainId, currentUser.getId());
+        HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
+                .orElseThrow(() -> {
+                    log.warn("Habit chain deletion failed - ID: {} not found for user ID: {}", chainId, currentUser.getId());
+                    return AppException.notFound("Habit chain not found");
+                });
+        habitChainRepository.delete(chain);
+        log.info("Habit chain ID: {} deleted successfully", chainId);
+    }
+}
