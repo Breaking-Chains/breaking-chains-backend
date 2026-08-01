@@ -24,8 +24,16 @@ public class PartnerService {
     private final AccountabilityPartnerRepository partnerRepository;
     private final CounselNoteRepository counselNoteRepository;
 
+    private void checkUser(User currentUser) {
+        if (currentUser == null) {
+            throw AppException.unauthorized("Authentication token is missing or invalid. Please log in first.");
+        }
+    }
+
     @Transactional
     public InvitePartnerResponse createInvite(User currentUser, UUID chainId, InvitePartnerRequest request) {
+        checkUser(currentUser);
+
         log.info("Generating partner invite code for user ID: {}, Chain ID: {}", currentUser.getId(), chainId);
 
         HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
@@ -57,6 +65,8 @@ public class PartnerService {
 
     @Transactional
     public InvitePartnerResponse acceptInvite(User currentUser, AcceptPartnerInviteRequest request) {
+        checkUser(currentUser);
+
         log.info("User ID: {} attempting to accept invite code: {}", currentUser.getId(), request.getInviteCode());
 
         AccountabilityPartner partnership = partnerRepository.findByInviteCode(request.getInviteCode().trim().toUpperCase())
@@ -89,6 +99,8 @@ public class PartnerService {
 
     @Transactional(readOnly = true)
     public List<HabitChainResponse> getMentees(User currentUser) {
+        checkUser(currentUser);
+
         log.debug("Fetching mentee habit chains for guide/mentor user ID: {}", currentUser.getId());
         List<AccountabilityPartner> partnerships = partnerRepository
                 .findByPartnerUserIdAndStatus(currentUser.getId(), PartnershipStatus.ACCEPTED);
@@ -100,6 +112,8 @@ public class PartnerService {
 
     @Transactional
     public CounselNoteResponse createCounselNote(User currentUser, UUID chainId, CounselNoteRequest request) {
+        checkUser(currentUser);
+
         log.info("Creating counsel note by mentor ID: {} for chain ID: {}", currentUser.getId(), chainId);
 
         HabitChain chain = habitChainRepository.findById(chainId)
@@ -134,6 +148,8 @@ public class PartnerService {
 
     @Transactional(readOnly = true)
     public List<CounselNoteResponse> getChainCounselNotes(User currentUser, UUID chainId) {
+        checkUser(currentUser);
+
         HabitChain chain = habitChainRepository.findById(chainId)
                 .orElseThrow(() -> AppException.notFound("Habit chain not found"));
 
@@ -153,6 +169,8 @@ public class PartnerService {
 
     @Transactional
     public void notifyPartnerDistress(User currentUser, NotifyPartnerDistressRequest request) {
+        checkUser(currentUser);
+
         log.info("ALERT: Distress notification triggered by user ID: {} for chain ID: {}", currentUser.getId(), request.getChainId());
 
         if (!habitChainRepository.existsByIdAndUserId(request.getChainId(), currentUser.getId())) {

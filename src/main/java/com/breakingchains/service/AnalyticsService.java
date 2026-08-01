@@ -27,8 +27,16 @@ public class AnalyticsService {
     private final LogEntryRepository logEntryRepository;
     private final MilestoneBadgeRepository milestoneBadgeRepository;
 
+    private void checkUser(User currentUser) {
+        if (currentUser == null) {
+            throw AppException.unauthorized("Authentication token is missing or invalid. Please log in first.");
+        }
+    }
+
     @Transactional
     public AnalyticsResponse getChainAnalytics(User currentUser, UUID chainId) {
+        checkUser(currentUser);
+
         log.info("Calculating analytics for user ID: {}, Chain ID: {}", currentUser.getId(), chainId);
 
         HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
@@ -95,6 +103,8 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public List<MilestoneBadgeResponse> getUserMilestones(User currentUser) {
+        checkUser(currentUser);
+
         List<MilestoneBadge> badges = milestoneBadgeRepository.findByUserIdOrderByAchievedAtDesc(currentUser.getId());
         return badges.stream()
                 .map(MilestoneBadgeResponse::fromEntity)

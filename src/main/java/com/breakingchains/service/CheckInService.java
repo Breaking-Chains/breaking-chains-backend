@@ -28,8 +28,16 @@ public class CheckInService {
     private final HabitChainRepository habitChainRepository;
     private final LogEntryRepository logEntryRepository;
 
+    private void checkUser(User currentUser) {
+        if (currentUser == null) {
+            throw AppException.unauthorized("Authentication token is missing or invalid. Please log in first.");
+        }
+    }
+
     @Transactional
     public CheckInResponse logCheckIn(User currentUser, UUID chainId, LogCheckInRequest request) {
+        checkUser(currentUser);
+
         log.info("Logging check-in for user ID: {}, Chain ID: {}, Status: {}",
                 currentUser.getId(), chainId, request.getStatus());
 
@@ -79,6 +87,8 @@ public class CheckInService {
 
     @Transactional(readOnly = true)
     public List<CheckInResponse> getChainLogs(User currentUser, UUID chainId) {
+        checkUser(currentUser);
+
         log.debug("Fetching check-in logs for chain ID: {} and user ID: {}", chainId, currentUser.getId());
         if (!habitChainRepository.existsByIdAndUserId(chainId, currentUser.getId())) {
             throw AppException.notFound("Habit chain not found");
@@ -94,6 +104,8 @@ public class CheckInService {
 
     @Transactional
     public void deleteLog(User currentUser, UUID chainId, UUID logId) {
+        checkUser(currentUser);
+
         log.info("Deleting check-in log ID: {} for chain ID: {} and user ID: {}", logId, chainId, currentUser.getId());
         LogEntry logEntry = logEntryRepository.findByIdAndUserId(logId, currentUser.getId())
                 .orElseThrow(() -> AppException.notFound("Log entry not found"));

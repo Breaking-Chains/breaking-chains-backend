@@ -2,6 +2,7 @@ package com.breakingchains.service;
 
 import com.breakingchains.dto.CompleteEmergencyRequest;
 import com.breakingchains.dto.EmergencyContentResponse;
+import com.breakingchains.dto.EmergencySessionResponse;
 import com.breakingchains.dto.StartEmergencyRequest;
 import com.breakingchains.exception.AppException;
 import com.breakingchains.model.*;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -23,8 +25,16 @@ public class EmergencyService {
     private final HabitChainRepository habitChainRepository;
     private final EmergencySessionRepository emergencySessionRepository;
 
+    private void checkUser(User currentUser) {
+        if (currentUser == null) {
+            throw AppException.unauthorized("Authentication token is missing or invalid. Please log in first.");
+        }
+    }
+
     @Transactional
     public EmergencyContentResponse startEmergencySession(User currentUser, StartEmergencyRequest request) {
+        checkUser(currentUser);
+
         log.info("Starting emergency SOS session for user ID: {}, Chain ID: {}", currentUser.getId(), request.getChainId());
 
         HabitChain chain = habitChainRepository.findByIdAndUserId(request.getChainId(), currentUser.getId())
@@ -53,7 +63,9 @@ public class EmergencyService {
     }
 
     @Transactional
-    public EmergencySession completeEmergencySession(User currentUser, UUID sessionId, CompleteEmergencyRequest request) {
+    public EmergencySessionResponse completeEmergencySession(User currentUser, UUID sessionId, CompleteEmergencyRequest request) {
+        checkUser(currentUser);
+
         log.info("Completing emergency session ID: {} for user ID: {}", sessionId, currentUser.getId());
 
         EmergencySession session = emergencySessionRepository.findByIdAndUserId(sessionId, currentUser.getId())
@@ -72,12 +84,17 @@ public class EmergencyService {
         EmergencySession updatedSession = emergencySessionRepository.save(session);
         log.info("Emergency session ID: {} completed. Craving drop: {} -> {}", 
                 sessionId, session.getCravingBefore(), session.getCravingAfter());
-        return updatedSession;
+        return EmergencySessionResponse.fromEntity(updatedSession);
     }
 
     @Transactional(readOnly = true)
-    public List<EmergencySession> getUserEmergencyHistory(User currentUser) {
-        return emergencySessionRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
+    public List<EmergencySessionResponse> getUserEmergencyHistory(User currentUser) {
+        checkUser(currentUser);
+
+        List<EmergencySession> sessions = emergencySessionRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
+        return sessions.stream()
+                .map(EmergencySessionResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 
     private EmergencyContentResponse generateEmergencyContent(EmergencySession session, HabitChain chain) {

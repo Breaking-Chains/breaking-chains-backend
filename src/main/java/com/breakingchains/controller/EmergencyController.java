@@ -3,8 +3,8 @@ package com.breakingchains.controller;
 import com.breakingchains.dto.ApiResponse;
 import com.breakingchains.dto.CompleteEmergencyRequest;
 import com.breakingchains.dto.EmergencyContentResponse;
+import com.breakingchains.dto.EmergencySessionResponse;
 import com.breakingchains.dto.StartEmergencyRequest;
-import com.breakingchains.model.EmergencySession;
 import com.breakingchains.model.User;
 import com.breakingchains.service.EmergencyService;
 import jakarta.validation.Valid;
@@ -35,20 +35,20 @@ public class EmergencyController {
     }
 
     @PostMapping("/{sessionId}/complete")
-    public ResponseEntity<ApiResponse<EmergencySession>> completeEmergencySession(
+    public ResponseEntity<ApiResponse<EmergencySessionResponse>> completeEmergencySession(
             @AuthenticationPrincipal User currentUser,
             @PathVariable UUID sessionId,
             @RequestBody CompleteEmergencyRequest request
     ) {
-        EmergencySession session = emergencyService.completeEmergencySession(currentUser, sessionId, request);
-        return ResponseEntity.ok(ApiResponse.success("Emergency session completed successfully", session));
+        EmergencySessionResponse response = emergencyService.completeEmergencySession(currentUser, sessionId, request);
+        return ResponseEntity.ok(ApiResponse.success("Emergency session completed successfully", response));
     }
 
     @GetMapping("/history")
-    public ResponseEntity<ApiResponse<List<EmergencySession>>> getEmergencyHistory(
+    public ResponseEntity<ApiResponse<List<EmergencySessionResponse>>> getEmergencyHistory(
             @AuthenticationPrincipal User currentUser
     ) {
-        List<EmergencySession> history = emergencyService.getUserEmergencyHistory(currentUser);
+        List<EmergencySessionResponse> history = emergencyService.getUserEmergencyHistory(currentUser);
         return ResponseEntity.ok(ApiResponse.success(history));
     }
 }
