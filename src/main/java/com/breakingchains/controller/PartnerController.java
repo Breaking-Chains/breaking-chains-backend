@@ -68,6 +68,26 @@ public class PartnerController {
         return ResponseEntity.ok(ApiResponse.success(notes));
     }
 
+    @PostMapping("/partnerships/{partnershipId}/messages")
+    public ResponseEntity<ApiResponse<PartnerMessageResponse>> sendPartnerMessage(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable("partnershipId") UUID partnershipId,
+            @Valid @RequestBody SendPartnerMessageRequest request
+    ) {
+        PartnerMessageResponse response = partnerService.sendPartnerMessage(currentUser, partnershipId, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Chat message sent successfully", response));
+    }
+
+    @GetMapping("/partnerships/{partnershipId}/messages")
+    public ResponseEntity<ApiResponse<List<PartnerMessageResponse>>> getPartnershipMessages(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable("partnershipId") UUID partnershipId
+    ) {
+        List<PartnerMessageResponse> messages = partnerService.getPartnershipMessages(currentUser, partnershipId);
+        return ResponseEntity.ok(ApiResponse.success(messages));
+    }
+
     @PostMapping("/partners/distress-alert")
     public ResponseEntity<ApiResponse<Void>> notifyPartnerDistress(
             @AuthenticationPrincipal User currentUser,

@@ -40,6 +40,11 @@
 			"key": "inviteCode",
 			"value": "SUHBAH-A1B2C3",
 			"type": "string"
+		},
+		{
+			"key": "partnershipId",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -754,7 +759,65 @@
 			}
 		},
 		{
-			"name": "25. Send Partner Distress Alert",
+			"name": "25. Send 2-Way Chat Message",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"messageContent\": \"Assalamu Alaikum, I completed my 7-day clean streak today and feel much stronger!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partnerships/{{partnershipId}}/messages",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partnerships",
+						"{{partnershipId}}",
+						"messages"
+					]
+				}
+			}
+		},
+		{
+			"name": "26. Get 2-Way Chat Messages",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partnerships/{{partnershipId}}/messages",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partnerships",
+						"{{partnershipId}}",
+						"messages"
+					]
+				}
+			}
+		},
+		{
+			"name": "27. Send Partner Distress Alert",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -786,7 +849,7 @@
 			}
 		},
 		{
-			"name": "26. Get Chain Analytics & Barakah Impact",
+			"name": "28. Get Chain Analytics & Barakah Impact",
 			"request": {
 				"method": "GET",
 				"header": [
@@ -811,7 +874,7 @@
 			}
 		},
 		{
-			"name": "27. Get All User Milestones",
+			"name": "29. Get All User Milestones",
 			"request": {
 				"method": "GET",
 				"header": [

@@ -5,6 +5,7 @@ import com.breakingchains.dto.LogCheckInRequest;
 import com.breakingchains.dto.PostSlipGuidanceDto;
 import com.breakingchains.exception.AppException;
 import com.breakingchains.model.*;
+import com.breakingchains.repository.AccountabilityPartnerRepository;
 import com.breakingchains.repository.HabitChainRepository;
 import com.breakingchains.repository.LogEntryRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class CheckInService {
 
     private final HabitChainRepository habitChainRepository;
     private final LogEntryRepository logEntryRepository;
+    private final AccountabilityPartnerRepository partnerRepository;
 
     private void checkUser(User currentUser) {
         if (currentUser == null) {
@@ -89,17 +91,36 @@ public class CheckInService {
     public List<CheckInResponse> getChainLogs(User currentUser, UUID chainId) {
         checkUser(currentUser);
 
-        log.debug("Fetching check-in logs for chain ID: {} and user ID: {}", chainId, currentUser.getId());
-        if (!habitChainRepository.existsByIdAndUserId(chainId, currentUser.getId())) {
+        log.debug("Fetching check-in logs for chain ID: {} by user ID: {}", chainId, currentUser.getId());
+
+        HabitChain chain = habitChainRepository.findById(chainId)
+                .orElseThrow(() -> AppException.notFound("Habit chain not found"));
+
+        boolean isChainOwner = chain.getUser().getId().equals(currentUser.getId());
+        boolean isAcceptedPartner = partnerRepository.existsByHabitChainIdAndPartnerUserIdAndStatus(
+                chainId, currentUser.getId(), PartnershipStatus.ACCEPTED);
+
+        if (!isChainOwner && !isAcceptedPartner) {
             throw AppException.notFound("Habit chain not found");
         }
 
-        List<LogEntry> entries = logEntryRepository
-                .findByHabitChainIdAndUserIdOrderByLogTimestampDesc(chainId, currentUser.getId());
+        if (!isChainOwner && chain.getPrivacyLevel() == PrivacyLevel.LEVEL_0_PRIVATE) {
+            throw AppException.forbidden("User has set this habit chain to confidential (LEVEL_0_PRIVATE)");
+        }
 
-        return entries.stream()
-                .map(CheckInResponse::fromEntity)
-                .collect(Collectors.toList());
+        List<LogEntry> entries = logEntryRepository.findByHabitChainIdOrderByLogTimestampDesc(chainId);
+
+        return entries.stream().map(entry -> {
+            CheckInResponse response = CheckInResponse.fromEntity(entry);
+            populateResilienceMetrics(chain, response);
+
+            // If partner viewing under LEVEL_1_STREAK_ONLY, mask private reflection note
+            if (!isChainOwner && chain.getPrivacyLevel() == PrivacyLevel.LEVEL_1_STREAK_ONLY) {
+                response.setReflectionNote("[Confidential Reflection]");
+            }
+
+            return response;
+        }).collect(Collectors.toList());
     }
 
     @Transactional

@@ -4,6 +4,7 @@ import com.breakingchains.dto.AnalyticsResponse;
 import com.breakingchains.dto.MilestoneBadgeResponse;
 import com.breakingchains.exception.AppException;
 import com.breakingchains.model.*;
+import com.breakingchains.repository.AccountabilityPartnerRepository;
 import com.breakingchains.repository.HabitChainRepository;
 import com.breakingchains.repository.LogEntryRepository;
 import com.breakingchains.repository.MilestoneBadgeRepository;
@@ -26,6 +27,7 @@ public class AnalyticsService {
     private final HabitChainRepository habitChainRepository;
     private final LogEntryRepository logEntryRepository;
     private final MilestoneBadgeRepository milestoneBadgeRepository;
+    private final AccountabilityPartnerRepository partnerRepository;
 
     private void checkUser(User currentUser) {
         if (currentUser == null) {
@@ -39,11 +41,22 @@ public class AnalyticsService {
 
         log.info("Calculating analytics for user ID: {}, Chain ID: {}", currentUser.getId(), chainId);
 
-        HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
+        HabitChain chain = habitChainRepository.findById(chainId)
                 .orElseThrow(() -> AppException.notFound("Habit chain not found"));
 
-        List<LogEntry> logs = logEntryRepository
-                .findByHabitChainIdAndUserIdOrderByLogTimestampDesc(chainId, currentUser.getId());
+        boolean isChainOwner = chain.getUser().getId().equals(currentUser.getId());
+        boolean isAcceptedPartner = partnerRepository.existsByHabitChainIdAndPartnerUserIdAndStatus(
+                chainId, currentUser.getId(), PartnershipStatus.ACCEPTED);
+
+        if (!isChainOwner && !isAcceptedPartner) {
+            throw AppException.notFound("Habit chain not found");
+        }
+
+        if (!isChainOwner && chain.getPrivacyLevel() == PrivacyLevel.LEVEL_0_PRIVATE) {
+            throw AppException.forbidden("User has set this habit chain to confidential (LEVEL_0_PRIVATE)");
+        }
+
+        List<LogEntry> logs = logEntryRepository.findByHabitChainIdOrderByLogTimestampDesc(chainId);
 
         long totalDaysTracked = Math.max(1, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()) + 1);
 
@@ -75,7 +88,7 @@ public class AnalyticsService {
                 .collect(Collectors.groupingBy(LogEntry::getTriggerTag, Collectors.counting()));
 
         // Evaluate & auto-award neuroplasticity / Nafs milestones
-        checkAndAwardMilestones(currentUser, chain, currentStreakDays);
+        checkAndAwardMilestones(chain.getUser(), chain, currentStreakDays);
 
         List<MilestoneBadge> badges = milestoneBadgeRepository.findByHabitChainIdOrderByAchievedAtDesc(chainId);
         List<MilestoneBadgeResponse> milestoneResponses = badges.stream()

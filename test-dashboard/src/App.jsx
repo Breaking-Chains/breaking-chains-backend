@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Shield, CheckCircle, AlertTriangle, Flame, Heart, BookOpen, User, Key, RefreshCw, 
-  Trash2, Plus, PhoneCall, Award, DollarSign, Clock, Lock, Sparkles, Send, Copy, LogOut
+  Trash2, Plus, PhoneCall, Award, DollarSign, Clock, Lock, Sparkles, Send, Copy, LogOut, MessageSquare
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -55,12 +55,14 @@ export default function App() {
   const [sosDuration, setSosDuration] = useState(180);
   const [sosTechnique, setSosTechnique] = useState('PHYSICAL_LEAVE_ROOM + WUDU_COOL_WATER + BOX_BREATHING_60S');
 
-  // Partner Form
+  // Partner Form & 2-Way Chat
   const [inviteRole, setInviteRole] = useState('SPIRITUAL_MENTOR');
   const [inviteCodeInput, setInviteCodeInput] = useState('');
   const [generatedInviteCode, setGeneratedInviteCode] = useState('');
+  const [partnershipIdInput, setPartnershipIdInput] = useState('');
   const [counselNoteContent, setCounselNoteContent] = useState("Remember Allah's mercy is greater than any mistake. Read Surah Ad-Duha tonight and stay strong.");
-  const [counselNotes, setCounselNotes] = useState([]);
+  const [chatMessageContent, setChatMessageContent] = useState("Assalamu Alaikum, I completed my 7-day clean streak today!");
+  const [chatMessages, setChatMessages] = useState([]);
 
   // Analytics
   const [analytics, setAnalytics] = useState(null);
@@ -257,32 +259,46 @@ export default function App() {
     if (res.ok && res.data?.data?.inviteCode) {
       setGeneratedInviteCode(res.data.data.inviteCode);
       setInviteCodeInput(res.data.data.inviteCode);
+      if (res.data.data.partnershipId) {
+        setPartnershipIdInput(res.data.data.partnershipId);
+      }
     }
   };
 
   const handleAcceptInvite = async () => {
     if (!inviteCodeInput) return alert('Please enter an invite code.');
-    await makeApiCall('/api/v1/partners/accept', 'POST', {
+    const res = await makeApiCall('/api/v1/partners/accept', 'POST', {
       inviteCode: inviteCodeInput
     });
+
+    if (res.ok && res.data?.data?.partnershipId) {
+      setPartnershipIdInput(res.data.data.partnershipId);
+    }
   };
 
   const handleCreateCounselNote = async () => {
     if (!selectedChainId) return alert('Please select or create a habit chain first.');
-    const res = await makeApiCall(`/api/v1/chains/${selectedChainId}/counsel-notes`, 'POST', {
+    await makeApiCall(`/api/v1/chains/${selectedChainId}/counsel-notes`, 'POST', {
       noteContent: counselNoteContent
+    });
+  };
+
+  const handleSendChatMessage = async () => {
+    if (!partnershipIdInput) return alert('Please enter or generate a Partnership ID first.');
+    const res = await makeApiCall(`/api/v1/partnerships/${partnershipIdInput}/messages`, 'POST', {
+      messageContent: chatMessageContent
     });
 
     if (res.ok) {
-      handleFetchCounselNotes();
+      handleFetchChatMessages();
     }
   };
 
-  const handleFetchCounselNotes = async () => {
-    if (!selectedChainId) return;
-    const res = await makeApiCall(`/api/v1/chains/${selectedChainId}/counsel-notes`, 'GET');
+  const handleFetchChatMessages = async () => {
+    if (!partnershipIdInput) return alert('Please enter or generate a Partnership ID first.');
+    const res = await makeApiCall(`/api/v1/partnerships/${partnershipIdInput}/messages`, 'GET');
     if (res.ok && Array.isArray(res.data?.data)) {
-      setCounselNotes(res.data.data);
+      setChatMessages(res.data.data);
     }
   };
 
@@ -377,7 +393,7 @@ export default function App() {
               { id: 'chains', label: '2. PMO & Chains', icon: Shield },
               { id: 'checkin', label: '3. Check-In & Tawbah', icon: CheckCircle },
               { id: 'sos', label: '4. Emergency SOS', icon: PhoneCall },
-              { id: 'counsel', label: '5. Mentorship (Suhbah)', icon: Heart },
+              { id: 'counsel', label: '5. Mentorship & 2-Way Chat', icon: Heart },
               { id: 'analytics', label: '6. Analytics & Barakah', icon: Award }
             ].map(tab => {
               const Icon = tab.icon;
@@ -614,15 +630,15 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 5: MENTORSHIP & COUNSEL */}
+          {/* TAB 5: MENTORSHIP & 2-WAY CHAT */}
           {activeTab === 'counsel' && (
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6">
               <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
-                <Heart className="w-5 h-5 text-rose-400" /> Confidential Guidance & Counsel (Suhbah & Nasiha)
+                <Heart className="w-5 h-5 text-rose-400" /> Mentorship, Counsel & 2-Way Chat (Suhbah & Nasiha)
               </h2>
 
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-                <h3 className="text-sm font-semibold text-purple-400">Generate Encrypted Mentor Invite Code</h3>
+                <h3 className="text-sm font-semibold text-purple-400">1. Generate Encrypted Mentor Invite Code</h3>
                 <button onClick={handleGenerateInvite} className="w-full bg-purple-600 hover:bg-purple-500 py-2 rounded-lg text-xs font-semibold">
                   POST /api/v1/chains/&#123;id&#125;/partners/invite
                 </button>
@@ -635,7 +651,7 @@ export default function App() {
               </div>
 
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-                <h3 className="text-sm font-semibold text-emerald-400">Accept Partner Invite Code</h3>
+                <h3 className="text-sm font-semibold text-emerald-400">2. Accept Partner Invite Code</h3>
                 <input type="text" placeholder="Enter Invite Code (e.g. SUHBAH-A1B2C3)" value={inviteCodeInput} onChange={e => setInviteCodeInput(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono" />
                 <button onClick={handleAcceptInvite} className="w-full bg-emerald-600 hover:bg-emerald-500 py-2 rounded-lg text-xs font-semibold">
                   POST /api/v1/partners/accept
@@ -643,11 +659,48 @@ export default function App() {
               </div>
 
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-                <h3 className="text-sm font-semibold text-blue-400">Submit Mentor Nasiha Counsel Note</h3>
+                <h3 className="text-sm font-semibold text-blue-400">3. Submit Mentor Counsel Note (Restricted to Accepted Mentor)</h3>
                 <textarea value={counselNoteContent} onChange={e => setCounselNoteContent(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs h-16" />
                 <button onClick={handleCreateCounselNote} className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-xs font-semibold">
                   POST /api/v1/chains/&#123;id&#125;/counsel-notes
                 </button>
+              </div>
+
+              {/* 2-WAY CHAT SECTION */}
+              <div className="bg-slate-950 p-4 rounded-xl border border-purple-500/40 space-y-3">
+                <h3 className="text-sm font-semibold text-purple-300 flex items-center gap-1.5">
+                  <MessageSquare className="w-4 h-4 text-purple-400" /> 4. 2-Way Mentorship Chat Thread
+                </h3>
+
+                <div>
+                  <label className="text-[10px] text-slate-400">Partnership ID</label>
+                  <input type="text" placeholder="Partnership UUID" value={partnershipIdInput} onChange={e => setPartnershipIdInput(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono" />
+                </div>
+
+                <div className="flex gap-2">
+                  <input type="text" placeholder="Type a message..." value={chatMessageContent} onChange={e => setChatMessageContent(e.target.value)} className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs" />
+                  <button onClick={handleSendChatMessage} className="bg-purple-600 hover:bg-purple-500 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1">
+                    <Send className="w-3.5 h-3.5" /> Send
+                  </button>
+                </div>
+
+                <button onClick={handleFetchChatMessages} className="w-full bg-slate-900 hover:bg-slate-800 text-slate-300 py-1.5 rounded-lg text-xs font-medium border border-slate-800 flex items-center justify-center gap-1">
+                  <RefreshCw className="w-3 h-3" /> GET /api/v1/partnerships/&#123;partnershipId&#125;/messages
+                </button>
+
+                {chatMessages.length > 0 && (
+                  <div className="space-y-2 max-h-48 overflow-y-auto p-2 bg-slate-900 rounded-lg border border-slate-800 text-xs">
+                    {chatMessages.map(m => (
+                      <div key={m.id} className="p-2 bg-slate-950 rounded border border-slate-800 space-y-0.5">
+                        <div className="flex justify-between text-[10px] text-purple-400">
+                          <span className="font-bold">{m.senderFullName} (@{m.senderUsername})</span>
+                          <span className="text-slate-500">{new Date(m.createdAt).toLocaleTimeString()}</span>
+                        </div>
+                        <p className="text-slate-200">{m.messageContent}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

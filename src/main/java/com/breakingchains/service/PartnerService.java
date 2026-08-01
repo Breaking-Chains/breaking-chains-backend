@@ -6,6 +6,7 @@ import com.breakingchains.model.*;
 import com.breakingchains.repository.AccountabilityPartnerRepository;
 import com.breakingchains.repository.CounselNoteRepository;
 import com.breakingchains.repository.HabitChainRepository;
+import com.breakingchains.repository.PartnerMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class PartnerService {
     private final HabitChainRepository habitChainRepository;
     private final AccountabilityPartnerRepository partnerRepository;
     private final CounselNoteRepository counselNoteRepository;
+    private final PartnerMessageRepository partnerMessageRepository;
 
     private void checkUser(User currentUser) {
         if (currentUser == null) {
@@ -169,6 +171,63 @@ public class PartnerService {
         List<CounselNote> notes = counselNoteRepository.findByHabitChainIdOrderByCreatedAtDesc(chainId);
         return notes.stream()
                 .map(CounselNoteResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PartnerMessageResponse sendPartnerMessage(User currentUser, UUID partnershipId, SendPartnerMessageRequest request) {
+        checkUser(currentUser);
+
+        AccountabilityPartner partnership = partnerRepository.findById(partnershipId)
+                .orElseThrow(() -> AppException.notFound("Partnership not found"));
+
+        if (partnership.getStatus() != PartnershipStatus.ACCEPTED) {
+            throw AppException.validationError("Partnership is not active");
+        }
+
+        boolean isStudent = partnership.getUser().getId().equals(currentUser.getId());
+        boolean isMentor = partnership.getPartnerUser() != null && partnership.getPartnerUser().getId().equals(currentUser.getId());
+
+        if (!isStudent && !isMentor) {
+            throw AppException.unauthorized("You are not a member of this mentorship partnership");
+        }
+
+        PartnerMessage message = PartnerMessage.builder()
+                .partnership(partnership)
+                .sender(currentUser)
+                .messageContent(request.getMessageContent().trim())
+                .isRead(false)
+                .build();
+
+        PartnerMessage savedMessage = partnerMessageRepository.save(message);
+        log.info("Partner chat message sent successfully with ID: {} in partnership ID: {}", savedMessage.getId(), partnershipId);
+
+        return PartnerMessageResponse.fromEntity(savedMessage);
+    }
+
+    @Transactional
+    public List<PartnerMessageResponse> getPartnershipMessages(User currentUser, UUID partnershipId) {
+        checkUser(currentUser);
+
+        AccountabilityPartner partnership = partnerRepository.findById(partnershipId)
+                .orElseThrow(() -> AppException.notFound("Partnership not found"));
+
+        boolean isStudent = partnership.getUser().getId().equals(currentUser.getId());
+        boolean isMentor = partnership.getPartnerUser() != null && partnership.getPartnerUser().getId().equals(currentUser.getId());
+
+        if (!isStudent && !isMentor) {
+            throw AppException.unauthorized("You are not a member of this mentorship partnership");
+        }
+
+        List<PartnerMessage> messages = partnerMessageRepository.findByPartnershipIdOrderByCreatedAtAsc(partnershipId);
+
+        // Mark unread messages as read
+        messages.stream()
+                .filter(m -> !m.getSender().getId().equals(currentUser.getId()) && !m.isRead())
+                .forEach(m -> m.setRead(true));
+
+        return messages.stream()
+                .map(PartnerMessageResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 

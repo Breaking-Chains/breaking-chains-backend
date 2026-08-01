@@ -5,6 +5,7 @@ import com.breakingchains.dto.HabitChainResponse;
 import com.breakingchains.dto.UpdateHabitChainRequest;
 import com.breakingchains.exception.AppException;
 import com.breakingchains.model.*;
+import com.breakingchains.repository.AccountabilityPartnerRepository;
 import com.breakingchains.repository.HabitChainRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class HabitChainService {
 
     private final HabitChainRepository habitChainRepository;
+    private final AccountabilityPartnerRepository partnerRepository;
 
     private void checkUser(User currentUser) {
         if (currentUser == null) {
@@ -104,11 +106,21 @@ public class HabitChainService {
         checkUser(currentUser);
 
         log.debug("Fetching habit chain ID: {} for user ID: {}", chainId, currentUser.getId());
-        HabitChain chain = habitChainRepository.findByIdAndUserId(chainId, currentUser.getId())
-                .orElseThrow(() -> {
-                    log.warn("Habit chain ID: {} not found for user ID: {}", chainId, currentUser.getId());
-                    return AppException.notFound("Habit chain not found");
-                });
+        HabitChain chain = habitChainRepository.findById(chainId)
+                .orElseThrow(() -> AppException.notFound("Habit chain not found"));
+
+        boolean isChainOwner = chain.getUser().getId().equals(currentUser.getId());
+        boolean isAcceptedPartner = partnerRepository.existsByHabitChainIdAndPartnerUserIdAndStatus(
+                chainId, currentUser.getId(), PartnershipStatus.ACCEPTED);
+
+        if (!isChainOwner && !isAcceptedPartner) {
+            throw AppException.notFound("Habit chain not found");
+        }
+
+        if (!isChainOwner && chain.getPrivacyLevel() == PrivacyLevel.LEVEL_0_PRIVATE) {
+            throw AppException.forbidden("User has configured this habit chain as confidential (LEVEL_0_PRIVATE)");
+        }
+
         return HabitChainResponse.fromEntity(chain);
     }
 

@@ -14,6 +14,8 @@ public interface LogEntryRepository extends JpaRepository<LogEntry, UUID> {
 
     List<LogEntry> findByHabitChainIdAndUserIdOrderByLogTimestampDesc(UUID chainId, UUID userId);
 
+    List<LogEntry> findByHabitChainIdOrderByLogTimestampDesc(UUID chainId);
+
     Optional<LogEntry> findByIdAndUserId(UUID id, UUID userId);
 
     long countByHabitChainIdAndStatus(UUID chainId, CheckInStatus status);

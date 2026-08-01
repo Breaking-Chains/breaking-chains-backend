@@ -97,76 +97,63 @@ Authorization: Bearer <accessToken>
 - `POST /api/v1/emergency/{sessionId}/complete` | Complete SOS session
 - `GET /api/v1/emergency/history` | Get SOS panic button history
 
-### 4.7 Confidential Guidance & Counsel Endpoints (`/api/v1/partners`)
-- `POST /api/v1/chains/{id}/partners/invite` | Generate encrypted invite code (e.g. `SUHBAH-A1B2C3`)
-- `POST /api/v1/partners/accept` | Accept partner invite
-- `GET /api/v1/partners/mentees` | Get mentees list
-- `POST /api/v1/chains/{id}/counsel-notes` | Submit mentor counsel note (*Nasiha*)
-- `GET /api/v1/chains/{id}/counsel-notes` | Get counsel notes
-- `POST /api/v1/partners/distress-alert` | Trigger partner distress alert
-
 ---
 
-### 4.8 Analytics, Milestones & Barakah Endpoints
+### 4.7 Confidential Guidance & Mentorship Endpoints (`/api/v1/partners`)
 
-#### 4.8.1 Get Habit Chain Analytics & Barakah Impact
-Retrieve comprehensive analytics for a habit chain, including clean percentage (resilience score), current/longest streak, money/time saved, *Sadaqah* potential, trigger frequency maps, and earned milestones.
+#### 4.7.1 Generate Partner Invite Code
+- `POST /api/v1/chains/{id}/partners/invite`
 
-- **Method:** `GET`
-- **Path:** `/api/v1/chains/{id}/analytics`
+#### 4.7.2 Accept Partner Invite Code
+- `POST /api/v1/partners/accept`
+
+#### 4.7.3 Get Mentees List
+- `GET /api/v1/partners/mentees`
+
+#### 4.7.4 Submit Mentor Counsel Note (*Nasiha*)
+- `POST /api/v1/chains/{id}/counsel-notes` (Restricted to accepted mentors)
+
+#### 4.7.5 Get Chain Counsel Notes
+- `GET /api/v1/chains/{id}/counsel-notes`
+
+#### 4.7.6 Send 2-Way Mentorship Chat Message
+Send a direct message in an active mentorship partnership thread between student and mentor.
+
+- **Method:** `POST`
+- **Path:** `/api/v1/partnerships/{partnershipId}/messages`
 - **Authentication:** `Bearer <accessToken>`
-- **Response `200 OK`:**
+- **Request Body:**
+  ```json
+  {
+    "messageContent": "Assalamu Alaikum, I completed my 7-day clean streak today and feel much stronger!"
+  }
+  ```
+
+- **Response `201 Created`:**
   ```json
   {
     "status": "success",
+    "message": "Chat message sent successfully",
     "data": {
-      "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
-      "title": "Pure Path - Overcome PMO",
-      "category": "SPIRITUAL_MORAL",
-      "subCategory": "PMO_RECOVERY",
-      "totalDaysTracked": 30,
-      "totalCleanDays": 28,
-      "totalSlipUps": 2,
-      "cleanPercentage": 93.33,
-      "currentStreakDays": 14,
-      "longestStreakDays": 14,
-      "moneySaved": 150.00,
-      "timeSavedHours": 21.0,
-      "sadaqahPotential": 150.00,
-      "triggerBreakdown": {
-        "Boredom & Social Media Scrolling": 2,
-        "Late Night in Bed": 5,
-        "Stress": 3
-      },
-      "earnedMilestones": [
-        {
-          "badgeId": "d4e5f6a7-b8c9-0123-def0-4567890abcde",
-          "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
-          "badgeType": "NAFS_LAWWAMAH_STRIVER",
-          "title": "7-Day Dopamine Reset Foundation (Nafs al-Lawwamah)",
-          "description": "1 week clean! Brain dopamine receptor sensitivity is restoring.",
-          "achievedAt": "2026-08-01T12:00:00"
-        },
-        {
-          "badgeId": "e5f6a7b8-c9d0-1234-ef01-567890abcdef",
-          "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
-          "badgeType": "NAFS_AMMARAH_SURVIVOR",
-          "title": "3-Day Withdrawal Survivor (Nafs al-Ammarah)",
-          "description": "Survived the initial acute physical urge peak.",
-          "achievedAt": "2026-08-01T12:00:00"
-        }
-      ]
+      "id": "f5e4d3c2-b1a0-9876-fedc-5432109876ba",
+      "partnershipId": "b2c3d4e5-f6a7-8901-bcde-234567890abc",
+      "senderId": "c0a80069-9fb9-1430-819f-b97453210000",
+      "senderFullName": "Alex Smith",
+      "senderUsername": "alexsmith",
+      "messageContent": "Assalamu Alaikum, I completed my 7-day clean streak today and feel much stronger!",
+      "isRead": false,
+      "createdAt": "2026-08-01T12:00:00"
     }
   }
   ```
 
 ---
 
-#### 4.8.2 Get All User Milestones & Neuroplasticity Badges
-Retrieve all earned neuroplasticity badges and spiritual milestones across all habit chains for the logged-in user.
+#### 4.7.7 Get 2-Way Mentorship Chat History
+Retrieve all chat messages in a partnership thread (in chronological order) and automatically mark incoming messages as read.
 
 - **Method:** `GET`
-- **Path:** `/api/v1/milestones`
+- **Path:** `/api/v1/partnerships/{partnershipId}/messages`
 - **Authentication:** `Bearer <accessToken>`
 - **Response `200 OK`:**
   ```json
@@ -174,13 +161,21 @@ Retrieve all earned neuroplasticity badges and spiritual milestones across all h
     "status": "success",
     "data": [
       {
-        "badgeId": "d4e5f6a7-b8c9-0123-def0-4567890abcde",
-        "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
-        "badgeType": "NAFS_LAWWAMAH_STRIVER",
-        "title": "7-Day Dopamine Reset Foundation (Nafs al-Lawwamah)",
-        "description": "1 week clean! Brain dopamine receptor sensitivity is restoring.",
-        "achievedAt": "2026-08-01T12:00:00"
+        "id": "f5e4d3c2-b1a0-9876-fedc-5432109876ba",
+        "partnershipId": "b2c3d4e5-f6a7-8901-bcde-234567890abc",
+        "senderId": "c0a80069-9fb9-1430-819f-b97453210000",
+        "senderFullName": "Alex Smith",
+        "senderUsername": "alexsmith",
+        "messageContent": "Assalamu Alaikum, I completed my 7-day clean streak today and feel much stronger!",
+        "isRead": true,
+        "createdAt": "2026-08-01T12:00:00"
       }
     ]
   }
   ```
+
+---
+
+### 4.8 Analytics, Milestones & Barakah Endpoints
+- `GET /api/v1/chains/{id}/analytics`
+- `GET /api/v1/milestones`
