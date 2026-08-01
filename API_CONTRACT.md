@@ -67,7 +67,7 @@ Authorization: Bearer <accessToken>
 ## 4. Endpoints Specification
 
 ### 4.1 System Health Check (`/health`)
-- **Method:** `GET` | **Auth:** None
+- `GET /health` | Health check
 
 ### 4.2 Authentication Endpoints (`/api/v1/auth`)
 - `POST /api/v1/auth/register` | Register user
@@ -92,94 +92,81 @@ Authorization: Bearer <accessToken>
 - `GET /api/v1/chains/{id}/logs` | Get check-in history
 - `DELETE /api/v1/chains/{id}/logs/{logId}` | Delete log entry
 
----
-
 ### 4.6 Emergency SOS Endpoints (`/api/v1/emergency`)
+- `POST /api/v1/emergency/start` | Initiate SOS urge-surfing session
+- `POST /api/v1/emergency/{sessionId}/complete` | Complete SOS session
+- `GET /api/v1/emergency/history` | Get SOS panic button history
 
-#### 4.6.1 Start Emergency SOS Session
-Initiate a 1-tap emergency intervention. Returns physical circuit breakers, Wudu protocols, Ayat/Du'a spiritual shields, and a 60s urge-surfing box breathing timer.
-
-- **Method:** `POST`
-- **Path:** `/api/v1/emergency/start`
-- **Authentication:** `Bearer <accessToken>`
-- **Request Body:**
-  ```json
-  {
-    "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
-    "sessionType": "PHYSICAL_CIRCUIT_BREAKER",
-    "cravingBefore": 9
-  }
-  ```
-
-- **Response `201 Created` (PMO/Spiritual Recovery Content):**
-  ```json
-  {
-    "status": "success",
-    "message": "Emergency SOS session started",
-    "data": {
-      "sessionId": "a1b2c3d4-e5f6-7890-abcd-1234567890ab",
-      "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
-      "sessionType": "PHYSICAL_CIRCUIT_BREAKER",
-      "title": "🚨 BREAK THE LOOP — EMERGENCY INTERVENTION",
-      "subtitle": "Urges peak over 15 to 20 minutes like a wave. Execute these physical circuit breakers right now.",
-      "immediatePhysicalStep": "🚨 STEP 1: Stand up, leave your bed and current room immediately. Put your phone down.",
-      "waterProtocolStep": "💧 STEP 2: Go to the bathroom and wash your face with cool water or perform a full Wudu.",
-      "spiritualShield": "📖 SPIRITUAL SHIELD: Recite Ayat al-Kursi (2:255), Surah An-Nur verse 30 ('Tell believing men to lower their gaze and guard their chastity'), and say 'A'udhu billahi mina ash-shaytani ar-rajim'.",
-      "breathingTimerSeconds": 60,
-      "groundingSteps": [
-        "5 things you can physically see around you right now",
-        "4 things you can physically feel or touch",
-        "3 distinct sounds you can hear in your environment",
-        "2 scents you can smell",
-        "1 slow, deep diaphragmatic breath in"
-      ],
-      "cravingBefore": 9,
-      "createdAt": "2026-08-01T12:00:00"
-    }
-  }
-  ```
+### 4.7 Confidential Guidance & Counsel Endpoints (`/api/v1/partners`)
+- `POST /api/v1/chains/{id}/partners/invite` | Generate encrypted invite code (e.g. `SUHBAH-A1B2C3`)
+- `POST /api/v1/partners/accept` | Accept partner invite
+- `GET /api/v1/partners/mentees` | Get mentees list
+- `POST /api/v1/chains/{id}/counsel-notes` | Submit mentor counsel note (*Nasiha*)
+- `GET /api/v1/chains/{id}/counsel-notes` | Get counsel notes
+- `POST /api/v1/partners/distress-alert` | Trigger partner distress alert
 
 ---
 
-#### 4.6.2 Complete Emergency SOS Session
-Record final craving drop delta, techniques applied, and total session duration.
+### 4.8 Analytics, Milestones & Barakah Endpoints
 
-- **Method:** `POST`
-- **Path:** `/api/v1/emergency/{sessionId}/complete`
+#### 4.8.1 Get Habit Chain Analytics & Barakah Impact
+Retrieve comprehensive analytics for a habit chain, including clean percentage (resilience score), current/longest streak, money/time saved, *Sadaqah* potential, trigger frequency maps, and earned milestones.
+
+- **Method:** `GET`
+- **Path:** `/api/v1/chains/{id}/analytics`
 - **Authentication:** `Bearer <accessToken>`
-- **Request Body:**
-  ```json
-  {
-    "cravingAfter": 3,
-    "durationSeconds": 180,
-    "techniqueUsed": "PHYSICAL_LEAVE_ROOM + WUDU_COOL_WATER + BOX_BREATHING_60S"
-  }
-  ```
-
 - **Response `200 OK`:**
   ```json
   {
     "status": "success",
-    "message": "Emergency session completed successfully",
     "data": {
-      "id": "a1b2c3d4-e5f6-7890-abcd-1234567890ab",
-      "sessionType": "PHYSICAL_CIRCUIT_BREAKER",
-      "techniqueUsed": "PHYSICAL_LEAVE_ROOM + WUDU_COOL_WATER + BOX_BREATHING_60S",
-      "cravingBefore": 9,
-      "cravingAfter": 3,
-      "durationSeconds": 180,
-      "createdAt": "2026-08-01T12:00:00"
+      "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
+      "title": "Pure Path - Overcome PMO",
+      "category": "SPIRITUAL_MORAL",
+      "subCategory": "PMO_RECOVERY",
+      "totalDaysTracked": 30,
+      "totalCleanDays": 28,
+      "totalSlipUps": 2,
+      "cleanPercentage": 93.33,
+      "currentStreakDays": 14,
+      "longestStreakDays": 14,
+      "moneySaved": 150.00,
+      "timeSavedHours": 21.0,
+      "sadaqahPotential": 150.00,
+      "triggerBreakdown": {
+        "Boredom & Social Media Scrolling": 2,
+        "Late Night in Bed": 5,
+        "Stress": 3
+      },
+      "earnedMilestones": [
+        {
+          "badgeId": "d4e5f6a7-b8c9-0123-def0-4567890abcde",
+          "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
+          "badgeType": "NAFS_LAWWAMAH_STRIVER",
+          "title": "7-Day Dopamine Reset Foundation (Nafs al-Lawwamah)",
+          "description": "1 week clean! Brain dopamine receptor sensitivity is restoring.",
+          "achievedAt": "2026-08-01T12:00:00"
+        },
+        {
+          "badgeId": "e5f6a7b8-c9d0-1234-ef01-567890abcdef",
+          "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
+          "badgeType": "NAFS_AMMARAH_SURVIVOR",
+          "title": "3-Day Withdrawal Survivor (Nafs al-Ammarah)",
+          "description": "Survived the initial acute physical urge peak.",
+          "achievedAt": "2026-08-01T12:00:00"
+        }
+      ]
     }
   }
   ```
 
 ---
 
-#### 4.6.3 Get Emergency SOS History
-Retrieve all past emergency panic button sessions and craving reduction metrics for the user.
+#### 4.8.2 Get All User Milestones & Neuroplasticity Badges
+Retrieve all earned neuroplasticity badges and spiritual milestones across all habit chains for the logged-in user.
 
 - **Method:** `GET`
-- **Path:** `/api/v1/emergency/history`
+- **Path:** `/api/v1/milestones`
 - **Authentication:** `Bearer <accessToken>`
 - **Response `200 OK`:**
   ```json
@@ -187,13 +174,12 @@ Retrieve all past emergency panic button sessions and craving reduction metrics 
     "status": "success",
     "data": [
       {
-        "id": "a1b2c3d4-e5f6-7890-abcd-1234567890ab",
-        "sessionType": "PHYSICAL_CIRCUIT_BREAKER",
-        "techniqueUsed": "PHYSICAL_LEAVE_ROOM + WUDU_COOL_WATER + BOX_BREATHING_60S",
-        "cravingBefore": 9,
-        "cravingAfter": 3,
-        "durationSeconds": 180,
-        "createdAt": "2026-08-01T12:00:00"
+        "badgeId": "d4e5f6a7-b8c9-0123-def0-4567890abcde",
+        "chainId": "c0a80069-9fb9-1430-819f-b97453210000",
+        "badgeType": "NAFS_LAWWAMAH_STRIVER",
+        "title": "7-Day Dopamine Reset Foundation (Nafs al-Lawwamah)",
+        "description": "1 week clean! Brain dopamine receptor sensitivity is restoring.",
+        "achievedAt": "2026-08-01T12:00:00"
       }
     ]
   }

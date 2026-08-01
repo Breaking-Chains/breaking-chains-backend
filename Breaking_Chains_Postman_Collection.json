@@ -35,6 +35,11 @@
 			"key": "sessionId",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "inviteCode",
+			"value": "SUHBAH-A1B2C3",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -270,7 +275,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"title\": \"Pure Path - Overcome PMO\",\n  \"description\": \"Breaking PMO addiction through daily spiritual purification and urge surfing.\",\n  \"category\": \"SPIRITUAL_MORAL\",\n  \"subCategory\": \"PMO_RECOVERY\",\n  \"privacyLevel\": \"LEVEL_0_PRIVATE\",\n  \"costPerInstance\": 0.00,\n  \"timeMinutesPerInstance\": 45,\n  \"triggerTags\": [\"Late Night in Bed\", \"Boredom\", \"Social Media Scrolling\"],\n  \"substituteAction\": \"Perform Wudu with cool water, pray 2 Raka'at Salat al-Tawbah, and do 2-minute box breathing\",\n  \"intentStatement\": \"I intend for the sake of Allah to purify my eyes, heart, and soul.\"\n}"
+					"raw": "{\n  \"title\": \"Pure Path - Overcome PMO\",\n  \"description\": \"Breaking PMO addiction through daily spiritual purification and urge surfing.\",\n  \"category\": \"SPIRITUAL_MORAL\",\n  \"subCategory\": \"PMO_RECOVERY\",\n  \"privacyLevel\": \"LEVEL_2_FULL_COUNSEL\",\n  \"costPerInstance\": 5.00,\n  \"timeMinutesPerInstance\": 45,\n  \"triggerTags\": [\"Late Night in Bed\", \"Boredom\", \"Social Media Scrolling\"],\n  \"substituteAction\": \"Perform Wudu with cool water, pray 2 Raka'at Salat al-Tawbah, and do 2-minute box breathing\",\n  \"intentStatement\": \"I intend for the sake of Allah to purify my eyes, heart, and soul.\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/v1/chains",
@@ -354,7 +359,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"title\": \"Pure Path - PMO Recovery\",\n  \"privacyLevel\": \"LEVEL_1_STREAK_ONLY\",\n  \"status\": \"ACTIVE\"\n}"
+					"raw": "{\n  \"title\": \"Pure Path - PMO Recovery\",\n  \"privacyLevel\": \"LEVEL_2_FULL_COUNSEL\",\n  \"status\": \"ACTIVE\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}",
@@ -596,6 +601,234 @@
 						"v1",
 						"emergency",
 						"history"
+					]
+				}
+			}
+		},
+		{
+			"name": "20. Generate Partner Invite Code",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"role\": \"SPIRITUAL_MENTOR\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/partners/invite",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"partners",
+						"invite"
+					]
+				}
+			}
+		},
+		{
+			"name": "21. Accept Partner Invite Code",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"inviteCode\": \"{{inviteCode}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partners/accept",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partners",
+						"accept"
+					]
+				}
+			}
+		},
+		{
+			"name": "22. Get Mentees List (For Mentors)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partners/mentees",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partners",
+						"mentees"
+					]
+				}
+			}
+		},
+		{
+			"name": "23. Submit Mentor Counsel Note (Nasiha)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"noteContent\": \"Remember Allah's mercy is greater than any mistake. Read Surah Ad-Duha tonight and stay strong on your daily Dhikr.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/counsel-notes",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"counsel-notes"
+					]
+				}
+			}
+		},
+		{
+			"name": "24. Get Chain Counsel Notes",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/counsel-notes",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"counsel-notes"
+					]
+				}
+			}
+		},
+		{
+			"name": "25. Send Partner Distress Alert",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"chainId\": \"{{chainId}}\",\n  \"message\": \"I am facing an intense urge right now, please make Du'a for me.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/partners/distress-alert",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"partners",
+						"distress-alert"
+					]
+				}
+			}
+		},
+		{
+			"name": "26. Get Chain Analytics & Barakah Impact",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/chains/{{chainId}}/analytics",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"chains",
+						"{{chainId}}",
+						"analytics"
+					]
+				}
+			}
+		},
+		{
+			"name": "27. Get All User Milestones",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/milestones",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"milestones"
 					]
 				}
 			}
