@@ -141,26 +141,56 @@ public class CheckInService {
 
     private void populateResilienceMetrics(HabitChain chain, CheckInResponse response) {
         long totalDays = Math.max(1, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()) + 1);
-        long cleanLogsCount = logEntryRepository.countByHabitChainIdAndStatus(chain.getId(), CheckInStatus.CLEAN)
-                + logEntryRepository.countByHabitChainIdAndStatus(chain.getId(), CheckInStatus.URGE_RESISTED);
+        List<LogEntry> logs = logEntryRepository.findByHabitChainIdOrderByLogTimestampDesc(chain.getId());
+
+        long cleanLogsCount = logs.stream()
+                .filter(l -> l.getStatus() != CheckInStatus.SLIP_UP)
+                .count();
+
+        long totalSlipUps = logs.stream()
+                .filter(l -> l.getStatus() == CheckInStatus.SLIP_UP)
+                .count();
 
         double resilienceScore = Math.round(((double) cleanLogsCount / totalDays) * 100.0 * 100.0) / 100.0;
         resilienceScore = Math.min(100.0, resilienceScore);
 
-        Optional<LogEntry> lastSlip = logEntryRepository
-                .findTopByHabitChainIdAndStatusOrderByLogTimestampDesc(chain.getId(), CheckInStatus.SLIP_UP);
+        long currentStreak = 0;
+        for (LogEntry log : logs) {
+            if (log.getStatus() != CheckInStatus.SLIP_UP) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
 
-        LocalDateTime lastSlipOrStart = lastSlip.isPresent() 
-                ? lastSlip.get().getLogTimestamp() 
-                : chain.getTargetStartDate();
+        long longestStreak = 0;
+        long runningStreak = 0;
+        for (int i = logs.size() - 1; i >= 0; i--) {
+            LogEntry log = logs.get(i);
+            if (log.getStatus() != CheckInStatus.SLIP_UP) {
+                runningStreak++;
+                if (runningStreak > longestStreak) {
+                    longestStreak = runningStreak;
+                }
+            } else {
+                runningStreak = 0;
+            }
+        }
 
-        long currentStreak = Math.max(0, ChronoUnit.DAYS.between(lastSlipOrStart, LocalDateTime.now()));
+        if (logs.isEmpty()) {
+            currentStreak = Math.max(0, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()));
+            longestStreak = currentStreak;
+        } else if (totalSlipUps == 0) {
+            long daysSinceStart = Math.max(0, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()));
+            currentStreak = Math.max(currentStreak, daysSinceStart);
+            longestStreak = Math.max(longestStreak, currentStreak);
+        }
 
         response.setTotalDays(totalDays);
         response.setTotalCleanDays(cleanLogsCount);
         response.setResilienceScore(resilienceScore);
         response.setCurrentStreakDays(currentStreak);
-        response.setLongestStreakDays(Math.max(currentStreak, response.getLongestStreakDays()));
+        response.setLongestStreakDays(longestStreak);
     }
 
     private PostSlipGuidanceDto generatePostSlipGuidance(HabitChain chain) {

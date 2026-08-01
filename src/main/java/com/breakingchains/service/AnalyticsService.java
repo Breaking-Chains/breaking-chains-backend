@@ -61,7 +61,7 @@ public class AnalyticsService {
         long totalDaysTracked = Math.max(1, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()) + 1);
 
         long totalCleanDays = logs.stream()
-                .filter(l -> l.getStatus() == CheckInStatus.CLEAN || l.getStatus() == CheckInStatus.URGE_RESISTED)
+                .filter(l -> l.getStatus() != CheckInStatus.SLIP_UP)
                 .count();
 
         long totalSlipUps = logs.stream()
@@ -70,12 +70,40 @@ public class AnalyticsService {
 
         double cleanPercentage = Math.min(100.0, Math.round(((double) totalCleanDays / totalDaysTracked) * 100.0 * 100.0) / 100.0);
 
-        Optional<LogEntry> lastSlip = logs.stream()
-                .filter(l -> l.getStatus() == CheckInStatus.SLIP_UP)
-                .findFirst();
+        // Compute current streak: count consecutive non-slip logs from most recent
+        long currentStreakDays = 0;
+        for (LogEntry log : logs) {
+            if (log.getStatus() != CheckInStatus.SLIP_UP) {
+                currentStreakDays++;
+            } else {
+                break;
+            }
+        }
 
-        LocalDateTime lastSlipOrStart = lastSlip.isPresent() ? lastSlip.get().getLogTimestamp() : chain.getTargetStartDate();
-        long currentStreakDays = Math.max(0, ChronoUnit.DAYS.between(lastSlipOrStart, LocalDateTime.now()));
+        // Compute longest streak across history
+        long longestStreakDays = 0;
+        long runningStreak = 0;
+        for (int i = logs.size() - 1; i >= 0; i--) {
+            LogEntry log = logs.get(i);
+            if (log.getStatus() != CheckInStatus.SLIP_UP) {
+                runningStreak++;
+                if (runningStreak > longestStreakDays) {
+                    longestStreakDays = runningStreak;
+                }
+            } else {
+                runningStreak = 0;
+            }
+        }
+
+        // Handle empty logs or time-elapsed since target start date when no slip-ups exist
+        if (logs.isEmpty()) {
+            currentStreakDays = Math.max(0, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()));
+            longestStreakDays = currentStreakDays;
+        } else if (totalSlipUps == 0) {
+            long daysSinceStart = Math.max(0, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()));
+            currentStreakDays = Math.max(currentStreakDays, daysSinceStart);
+            longestStreakDays = Math.max(longestStreakDays, currentStreakDays);
+        }
 
         BigDecimal costPerInstance = chain.getCostPerInstance() != null ? chain.getCostPerInstance() : BigDecimal.ZERO;
         BigDecimal moneySaved = costPerInstance.multiply(BigDecimal.valueOf(totalCleanDays));
@@ -105,7 +133,7 @@ public class AnalyticsService {
                 .totalSlipUps(totalSlipUps)
                 .cleanPercentage(cleanPercentage)
                 .currentStreakDays(currentStreakDays)
-                .longestStreakDays(currentStreakDays)
+                .longestStreakDays(longestStreakDays)
                 .moneySaved(moneySaved)
                 .timeSavedHours(timeSavedHours)
                 .sadaqahPotential(moneySaved)

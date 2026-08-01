@@ -38,12 +38,26 @@ public class HabitChainService {
     }
 
     private long calculateStreak(HabitChain chain) {
-        Optional<LogEntry> lastSlip = logEntryRepository.findTopByHabitChainIdAndStatusOrderByLogTimestampDesc(
-                chain.getId(), CheckInStatus.SLIP_UP);
-        LocalDateTime lastSlipOrStart = lastSlip.isPresent() 
-                ? lastSlip.get().getLogTimestamp() 
-                : (chain.getTargetStartDate() != null ? chain.getTargetStartDate() : chain.getCreatedAt());
-        return Math.max(0, ChronoUnit.DAYS.between(lastSlipOrStart, LocalDateTime.now()));
+        List<LogEntry> logs = logEntryRepository.findByHabitChainIdOrderByLogTimestampDesc(chain.getId());
+        long currentStreak = 0;
+        for (LogEntry log : logs) {
+            if (log.getStatus() != CheckInStatus.SLIP_UP) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+        if (logs.isEmpty()) {
+            return chain.getTargetStartDate() != null 
+                    ? Math.max(0, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()))
+                    : 0;
+        }
+        long totalSlipUps = logs.stream().filter(l -> l.getStatus() == CheckInStatus.SLIP_UP).count();
+        if (totalSlipUps == 0 && chain.getTargetStartDate() != null) {
+            long daysSinceStart = Math.max(0, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()));
+            return Math.max(currentStreak, daysSinceStart);
+        }
+        return currentStreak;
     }
 
     @Transactional
