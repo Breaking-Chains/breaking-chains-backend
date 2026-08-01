@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: breaking_chains_spring_boot
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/breaking_chains_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - JWT_SECRET=supersecretkeyforjwttokengenerationbreakingchainsbackend2026!
+      - GOOGLE_CLIENT_ID=your-google-client-id
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: breaking_chains_postgres
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=breaking_chains_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d breaking_chains_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,11 +1,9 @@
+.git
+.gitignore
 .gradle/
 build/
-out/
 bin/
+out/
 .idea/
 .vscode/
-*.iml
-*.ipr
-*.iws
 *.log
-.DS_Store

@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: breaking-chains-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5433/breaking_chains_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET:supersecretkeyforjwttokengenerationbreakingchainsbackend2026!}
+  access-expiration-ms: 900000 # 15 minutes (15 * 60 * 1000)
+  refresh-expiration-ms: 604800000 # 7 days (7 * 24 * 60 * 60 * 1000)
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}

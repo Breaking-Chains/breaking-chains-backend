@@ -1,96 +1,100 @@
-# Breaking Chains - Backend Service
+# Breaking Chains - Java Spring Boot Backend Service
 
-TypeScript & Node.js REST API service for **Breaking Chains** Android application. Provides authentication (Email/Password & Google Sign-In), token rotation, and profile management.
+Java 17 & Spring Boot 3 REST API service for **Breaking Chains** Android application. Adheres strictly to [`API_CONTRACT.md`](../breaking-chains-backend/API_CONTRACT.md).
 
 ---
 
 ## Technical Stack
 
-- **Runtime & Language:** Node.js, TypeScript (ES2022)
-- **Web Framework:** Express.js v5
-- **Database & ORM:** PostgreSQL + Prisma ORM v6
-- **Authentication:** JWT (Access + Refresh token rotation), `bcryptjs`, Google Identity (`google-auth-library`)
-- **Validation:** Zod schema validation
-- **Testing:** Jest & Supertest
+- **Runtime & Language:** Java 17, Spring Boot 3.3.x
+- **Build Tool:** Gradle
+- **Database & ORM:** PostgreSQL + Spring Data JPA (Hibernate)
+- **Dev Tool:** Spring Boot DevTools (Hot Reloading / Live Reload)
+- **Authentication:** JWT (Access + Refresh token rotation via JJWT), Spring Security, Google Identity (`google-api-client`)
+- **Validation:** Spring Boot Starter Validation (`jakarta.validation`)
 
 ---
 
-## Project Structure
+## Quick Start (Option 1: Database in Docker + App Native) 🚀
 
-```text
-breaking-chains-backend/
-├── API_CONTRACT.md          # Standalone API contract for Frontend/Android developers
-├── prisma/
-│   └── schema.prisma        # Prisma PostgreSQL schema (User, RefreshToken)
-├── src/
-│   ├── config/              # Environment config & Prisma client singleton
-│   ├── errors/              # AppError custom exception handling
-│   ├── middlewares/         # Auth, validation & global error middlewares
-│   ├── modules/
-│   │   ├── auth/            # Auth controller, service, schema & routes
-│   │   └── user/            # User profile controller, service, schema & routes
-│   ├── utils/               # JWT sign & verify helpers
-│   ├── app.ts               # Express application initialization
-│   └── server.ts            # Server entry point
-├── tests/                   # Jest unit & integration test suites
-├── .env.example             # Environment variables template
-├── package.json
-└── tsconfig.json
-```
+This is the recommended local development workflow for maximum speed and instant live reloads.
 
----
-
-## Setup & Local Development
-
-### 1. Prerequisites
-- Node.js (v18+ recommended)
-- PostgreSQL database running locally or remotely
-
-### 2. Environment Configuration
-Copy `.env.example` to `.env` and set your credentials:
+### 1. Start PostgreSQL Database in Docker
+From the project directory, start only the database container in detached mode:
 
 ```bash
-cp .env.example .env
+docker compose up postgres -d
 ```
 
-Update `DATABASE_URL` in `.env`:
-```env
-DATABASE_URL="postgresql://postgres:password@localhost:5432/breaking_chains_db?schema=public"
+*The database will run on `localhost:5433` with database `breaking_chains_db`, user `postgres`, password `password`.*
+
+### 2. Run Spring Boot Server
+In PowerShell / Terminal, launch the development server:
+
+**Windows:**
+```powershell
+.\gradlew bootRun
 ```
 
-### 3. Database Migration
-Generate Prisma client and apply database migrations:
-
+**macOS / Linux:**
 ```bash
-# Generate Prisma Client
-npm run prisma:generate
-
-# Run Database Migrations
-npm run prisma:migrate
+./gradlew bootRun
 ```
 
-### 4. Running Dev Server
-Start the development server with live reload:
-
-```bash
-npm run dev
+The application will start on **`http://localhost:8080`**. Test the health check endpoint:
+```http
+GET http://localhost:8080/health
 ```
-
-Server will run on `http://localhost:5000`. Test healthcheck at `http://localhost:5000/health`.
 
 ---
 
-## Available Scripts
+## Hot Reloading with Spring Boot DevTools 🔥
 
-- `npm run dev`: Start dev server with `ts-node-dev` (hot reload).
-- `npm run build`: Compile TypeScript code to `/dist`.
-- `npm start`: Run compiled production code from `/dist/server.js`.
-- `npm test`: Run Jest unit and integration tests.
-- `npm run prisma:generate`: Re-generate Prisma Client.
-- `npm run prisma:migrate`: Create and execute database migration scripts.
+Spring Boot DevTools is included in `build.gradle`:
+```groovy
+developmentOnly 'org.springframework.boot:spring-boot-devtools'
+```
+
+- When running `.\gradlew bootRun`, any changes to `.class` files or `application.yml` automatically trigger an **instant application context restart (~1s)**.
+- **IDE Tip:** Enable "Build Automatically" (or press `Ctrl + F9` / `Ctrl + S` depending on your IDE) so compiled `.class` files update automatically when you save.
 
 ---
 
-## API Contract Specification
+## Alternative: Run Entire Stack in Docker 🐳
 
-See [`API_CONTRACT.md`](./API_CONTRACT.md) for full endpoints documentation, request/response formats, TypeScript interfaces, and error codes.
+To run both PostgreSQL and Spring Boot inside Docker containers (e.g. for teammates without Java installed locally):
+
+```bash
+docker compose up --build
+```
+
+---
+
+## API Endpoints Overview
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/health` | No | Health check endpoint |
+| `POST` | `/api/v1/auth/register` | No | Register new user with email & password |
+| `POST` | `/api/v1/auth/login` | No | Login with email & password |
+| `POST` | `/api/v1/auth/google` | No | Authenticate via Google ID Token |
+| `POST` | `/api/v1/auth/refresh` | No | Obtain new access token via refresh token |
+| `POST` | `/api/v1/auth/logout` | Yes | Revoke refresh token |
+| `GET` | `/api/v1/users/me` | Yes | Get logged-in user profile |
+| `PUT` | `/api/v1/users/me` | Yes | Update logged-in user profile |
+
+---
+
+## Building Executable Production JAR
+
+To build a standalone production executable JAR:
+
+```bash
+# Windows
+.\gradlew bootJar
+
+# macOS / Linux
+./gradlew bootJar
+```
+
+The output JAR will be placed at: `build/libs/breaking-chains-backend-1.0.0.jar`.
