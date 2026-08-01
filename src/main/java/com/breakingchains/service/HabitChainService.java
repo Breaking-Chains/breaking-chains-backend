@@ -7,6 +7,7 @@ import com.breakingchains.exception.AppException;
 import com.breakingchains.model.*;
 import com.breakingchains.repository.AccountabilityPartnerRepository;
 import com.breakingchains.repository.HabitChainRepository;
+import com.breakingchains.repository.LogEntryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,11 +29,21 @@ public class HabitChainService {
 
     private final HabitChainRepository habitChainRepository;
     private final AccountabilityPartnerRepository partnerRepository;
+    private final LogEntryRepository logEntryRepository;
 
     private void checkUser(User currentUser) {
         if (currentUser == null) {
             throw AppException.unauthorized("Authentication token is missing or invalid. Please log in first.");
         }
+    }
+
+    private long calculateStreak(HabitChain chain) {
+        Optional<LogEntry> lastSlip = logEntryRepository.findTopByHabitChainIdAndStatusOrderByLogTimestampDesc(
+                chain.getId(), CheckInStatus.SLIP_UP);
+        LocalDateTime lastSlipOrStart = lastSlip.isPresent() 
+                ? lastSlip.get().getLogTimestamp() 
+                : (chain.getTargetStartDate() != null ? chain.getTargetStartDate() : chain.getCreatedAt());
+        return Math.max(0, ChronoUnit.DAYS.between(lastSlipOrStart, LocalDateTime.now()));
     }
 
     @Transactional
@@ -82,7 +95,7 @@ public class HabitChainService {
 
         HabitChain savedChain = habitChainRepository.save(chain);
         log.info("Habit chain created successfully with ID: {} for user ID: {}", savedChain.getId(), currentUser.getId());
-        return HabitChainResponse.fromEntity(savedChain);
+        return HabitChainResponse.fromEntity(savedChain, calculateStreak(savedChain));
     }
 
     @Transactional(readOnly = true)
@@ -97,7 +110,7 @@ public class HabitChainService {
             chains = habitChainRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
         }
         return chains.stream()
-                .map(HabitChainResponse::fromEntity)
+                .map(c -> HabitChainResponse.fromEntity(c, calculateStreak(c)))
                 .collect(Collectors.toList());
     }
 
@@ -121,7 +134,7 @@ public class HabitChainService {
             throw AppException.forbidden("User has configured this habit chain as confidential (LEVEL_0_PRIVATE)");
         }
 
-        return HabitChainResponse.fromEntity(chain);
+        return HabitChainResponse.fromEntity(chain, calculateStreak(chain));
     }
 
     @Transactional
@@ -174,7 +187,7 @@ public class HabitChainService {
 
         HabitChain updatedChain = habitChainRepository.save(chain);
         log.info("Habit chain ID: {} updated successfully", chainId);
-        return HabitChainResponse.fromEntity(updatedChain);
+        return HabitChainResponse.fromEntity(updatedChain, calculateStreak(updatedChain));
     }
 
     @Transactional

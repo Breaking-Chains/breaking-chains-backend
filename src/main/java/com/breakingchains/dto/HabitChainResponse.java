@@ -9,6 +9,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,10 +34,18 @@ public class HabitChainResponse {
     private List<String> triggerTags;
     private String substituteAction;
     private String intentStatement;
+    private long currentStreak;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static HabitChainResponse fromEntity(HabitChain chain) {
+        long defaultStreak = chain.getTargetStartDate() != null 
+                ? Math.max(0, ChronoUnit.DAYS.between(chain.getTargetStartDate(), LocalDateTime.now()))
+                : 0;
+        return fromEntity(chain, defaultStreak);
+    }
+
+    public static HabitChainResponse fromEntity(HabitChain chain, long currentStreak) {
         return HabitChainResponse.builder()
                 .id(chain.getId())
                 .userId(chain.getUser().getId())
@@ -52,6 +61,7 @@ public class HabitChainResponse {
                 .triggerTags(chain.getTriggerTags())
                 .substituteAction(chain.getSubstituteAction())
                 .intentStatement(chain.getIntentStatement())
+                .currentStreak(currentStreak)
                 .createdAt(chain.getCreatedAt())
                 .updatedAt(chain.getUpdatedAt())
                 .build();
