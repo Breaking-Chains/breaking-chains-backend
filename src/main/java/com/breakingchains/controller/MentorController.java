@@ -1,5 +1,6 @@
 package com.breakingchains.controller;
 
+import com.breakingchains.dto.ApiResponse;
 import com.breakingchains.dto.MentorProfileResponse;
 import com.breakingchains.dto.MentorRegistrationRequest;
 import com.breakingchains.dto.UpdateMentorStatusRequest;
@@ -23,37 +24,37 @@ public class MentorController {
     private final MentorService mentorService;
 
     @PostMapping("/register")
-    public ResponseEntity<MentorProfileResponse> registerMentor(
+    public ResponseEntity<ApiResponse<MentorProfileResponse>> registerMentor(
             @AuthenticationPrincipal User currentUser,
             @Valid @RequestBody MentorRegistrationRequest request) {
         MentorProfileResponse response = mentorService.registerMentor(currentUser, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Mentor registration application submitted successfully", response));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<MentorProfileResponse> getMyProfile(
+    public ResponseEntity<ApiResponse<MentorProfileResponse>> getMyProfile(
             @AuthenticationPrincipal User currentUser) {
         MentorProfileResponse response = mentorService.getMyProfile(currentUser);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/verified")
-    public ResponseEntity<List<MentorProfileResponse>> getVerifiedMentors() {
+    public ResponseEntity<ApiResponse<List<MentorProfileResponse>>> getVerifiedMentors() {
         List<MentorProfileResponse> mentors = mentorService.getVerifiedMentors();
-        return ResponseEntity.ok(mentors);
+        return ResponseEntity.ok(ApiResponse.success(mentors));
     }
 
     @GetMapping("/applications")
-    public ResponseEntity<List<MentorProfileResponse>> getAllApplications() {
+    public ResponseEntity<ApiResponse<List<MentorProfileResponse>>> getAllApplications() {
         List<MentorProfileResponse> applications = mentorService.getAllApplications();
-        return ResponseEntity.ok(applications);
+        return ResponseEntity.ok(ApiResponse.success(applications));
     }
 
     @PutMapping("/applications/{profileId}/status")
-    public ResponseEntity<MentorProfileResponse> updateApplicationStatus(
+    public ResponseEntity<ApiResponse<MentorProfileResponse>> updateApplicationStatus(
             @PathVariable UUID profileId,
             @Valid @RequestBody UpdateMentorStatusRequest request) {
         MentorProfileResponse response = mentorService.updateApplicationStatus(profileId, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(ApiResponse.success("Mentor application status updated successfully", response));
     }
 }
