@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,11 +18,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
+@Tag(name = "Mentorship & Accountability", description = "Endpoints for managing partnerships, chat messages, and counseling notes")
 public class PartnerController {
 
     private final PartnerService partnerService;
 
     @PostMapping("/chains/{id}/partners/invite")
+    @Operation(summary = "Generate Partner Invite Code", description = "Generates a unique 6-character invitation code to connect an accountability partner or mentor to a chain.")
     public ResponseEntity<ApiResponse<InvitePartnerResponse>> createInvite(
             @AuthenticationPrincipal User currentUser,
             @PathVariable("id") UUID chainId,
@@ -32,6 +36,7 @@ public class PartnerController {
     }
 
     @PostMapping("/partners/accept")
+    @Operation(summary = "Accept Partner Invite Code", description = "Accepts an accountability or mentorship invitation link using the invite code.")
     public ResponseEntity<ApiResponse<InvitePartnerResponse>> acceptInvite(
             @AuthenticationPrincipal User currentUser,
             @Valid @RequestBody AcceptPartnerInviteRequest request
@@ -41,6 +46,7 @@ public class PartnerController {
     }
 
     @GetMapping("/partners/mentees")
+    @Operation(summary = "Get Mentees List (For Mentors)", description = "Retrieves all habit chains where the authenticated user is an accepted mentor or accountability partner.")
     public ResponseEntity<ApiResponse<List<HabitChainResponse>>> getMentees(
             @AuthenticationPrincipal User currentUser
     ) {
@@ -49,6 +55,7 @@ public class PartnerController {
     }
 
     @PostMapping("/chains/{id}/counsel-notes")
+    @Operation(summary = "Submit Mentor Counsel Note (*Nasiha*)", description = "Allows an accepted mentor to leave counsel notes on a mentee's habit chain.")
     public ResponseEntity<ApiResponse<CounselNoteResponse>> createCounselNote(
             @AuthenticationPrincipal User currentUser,
             @PathVariable("id") UUID chainId,
@@ -60,6 +67,7 @@ public class PartnerController {
     }
 
     @GetMapping("/chains/{id}/counsel-notes")
+    @Operation(summary = "Get Chain Counsel Notes", description = "Retrieves all counsel notes left on a specific habit chain.")
     public ResponseEntity<ApiResponse<List<CounselNoteResponse>>> getChainCounselNotes(
             @AuthenticationPrincipal User currentUser,
             @PathVariable("id") UUID chainId
@@ -69,6 +77,7 @@ public class PartnerController {
     }
 
     @PostMapping("/partnerships/{partnershipId}/messages")
+    @Operation(summary = "Send 2-Way Mentorship Chat Message", description = "Sends a 2-way chat message inside a partnership/mentorship channel.")
     public ResponseEntity<ApiResponse<PartnerMessageResponse>> sendPartnerMessage(
             @AuthenticationPrincipal User currentUser,
             @PathVariable("partnershipId") UUID partnershipId,
@@ -80,6 +89,7 @@ public class PartnerController {
     }
 
     @GetMapping("/partnerships/{partnershipId}/messages")
+    @Operation(summary = "Get 2-Way Mentorship Chat History", description = "Retrieves chat history messages for a partnership.")
     public ResponseEntity<ApiResponse<List<PartnerMessageResponse>>> getPartnershipMessages(
             @AuthenticationPrincipal User currentUser,
             @PathVariable("partnershipId") UUID partnershipId
@@ -89,6 +99,7 @@ public class PartnerController {
     }
 
     @PostMapping("/partners/distress-alert")
+    @Operation(summary = "Send Partner Distress SOS Alert", description = "Dispatches an instant distress SOS notification to the designated partner for a habit chain.")
     public ResponseEntity<ApiResponse<Void>> notifyPartnerDistress(
             @AuthenticationPrincipal User currentUser,
             @Valid @RequestBody NotifyPartnerDistressRequest request
