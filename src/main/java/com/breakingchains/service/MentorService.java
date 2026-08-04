@@ -6,6 +6,7 @@ import com.breakingchains.dto.UpdateMentorStatusRequest;
 import com.breakingchains.exception.AppException;
 import com.breakingchains.model.MentorProfile;
 import com.breakingchains.model.MentorStatus;
+import com.breakingchains.model.Role;
 import com.breakingchains.model.User;
 import com.breakingchains.repository.MentorProfileRepository;
 import com.breakingchains.repository.UserRepository;
@@ -61,6 +62,7 @@ public class MentorService {
 
         if (autoApprove) {
             currentUser.setIsVerifiedMentor(true);
+            currentUser.setRole(Role.MENTOR);
             userRepository.save(currentUser);
             log.info("Dev Mode: User ID: {} automatically approved as verified mentor", currentUser.getId());
         }
@@ -106,8 +108,12 @@ public class MentorService {
         User user = profile.getUser();
         if (request.getStatus() == MentorStatus.APPROVED) {
             user.setIsVerifiedMentor(true);
+            user.setRole(Role.MENTOR);
         } else {
             user.setIsVerifiedMentor(false);
+            if (user.getRole() != Role.ADMIN) {
+                user.setRole(Role.USER);
+            }
         }
         userRepository.save(user);
 

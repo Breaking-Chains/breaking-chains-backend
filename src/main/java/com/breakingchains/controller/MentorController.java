@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,6 +52,7 @@ public class MentorController {
     }
 
     @GetMapping("/applications")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get All Mentor Applications (Admin / Dev)", description = "Retrieves all mentor applications (for admin/developer review).")
     public ResponseEntity<ApiResponse<List<MentorProfileResponse>>> getAllApplications() {
         List<MentorProfileResponse> applications = mentorService.getAllApplications();
@@ -58,6 +60,7 @@ public class MentorController {
     }
 
     @PutMapping("/applications/{profileId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update Mentor Application Status (Admin / Dev)", description = "Approves or rejects a mentor registration application.")
     public ResponseEntity<ApiResponse<MentorProfileResponse>> updateApplicationStatus(
             @PathVariable UUID profileId,

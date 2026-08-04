@@ -175,7 +175,7 @@ public class AuthService {
 
     private TokenResponse createAndSaveTokens(User user) {
         String userIdStr = user.getId().toString();
-        String accessToken = jwtProvider.generateAccessToken(userIdStr, user.getEmail());
+        String accessToken = jwtProvider.generateAccessToken(userIdStr, user.getEmail(), user.getRole().name());
         String refreshToken = jwtProvider.generateRefreshToken(userIdStr);
 
         LocalDateTime expiresAt = LocalDateTime.ofInstant(

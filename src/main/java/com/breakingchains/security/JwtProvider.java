@@ -27,13 +27,14 @@ public class JwtProvider {
         this.refreshExpirationMs = refreshExpirationMs;
     }
 
-    public String generateAccessToken(String userId, String email) {
+    public String generateAccessToken(String userId, String email, String role) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessExpirationMs);
 
         return Jwts.builder()
                 .subject(userId)
                 .claim("email", email)
+                .claim("role", role)
                 .claim("type", "ACCESS")
                 .issuedAt(now)
                 .expiration(expiry)
@@ -56,6 +57,10 @@ public class JwtProvider {
 
     public String getUserIdFromToken(String token) {
         return getClaims(token).getSubject();
+    }
+
+    public String getRoleFromToken(String token) {
+        return getClaims(token).get("role", String.class);
     }
 
     public Claims getClaims(String token) {

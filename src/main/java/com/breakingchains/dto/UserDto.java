@@ -1,6 +1,7 @@
 package com.breakingchains.dto;
 
 import com.breakingchains.model.AuthProvider;
+import com.breakingchains.model.Role;
 import com.breakingchains.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class UserDto {
     private String avatarUrl;
     private String bio;
     private AuthProvider authProvider;
+    private Role role;
     private String createdAt;
     private String updatedAt;
 
@@ -44,6 +46,7 @@ public class UserDto {
                 .avatarUrl(user.getAvatarUrl())
                 .bio(user.getBio())
                 .authProvider(user.getAuthProvider())
+                .role(user.getRole())
                 .createdAt(createdStr)
                 .updatedAt(updatedStr)
                 .build();
