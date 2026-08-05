@@ -23,6 +23,7 @@ public class AccountabilityPartnershipResponse {
     private String partnerUsername;
     private PartnerRole role;
     private PartnershipStatus status;
+    private String inviteCode;
     private LocalDateTime createdAt;
 
     public static AccountabilityPartnershipResponse fromEntity(AccountabilityPartner partnership) {
@@ -45,6 +46,7 @@ public class AccountabilityPartnershipResponse {
                 .partnerUsername(partnerUser)
                 .role(partnership.getRole())
                 .status(partnership.getStatus())
+                .inviteCode(partnership.getInviteCode())
                 .createdAt(partnership.getCreatedAt())
                 .build();
     }
