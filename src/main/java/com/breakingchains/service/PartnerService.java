@@ -311,4 +311,14 @@ public class PartnerService {
         // Log distress event for partner notification service
         log.info("Distress alert message: '{}'", request.getMessage() != null ? request.getMessage() : "Urge distress alert triggered");
     }
+
+    @Transactional(readOnly = true)
+    public List<AccountabilityPartnershipResponse> getUserPartnerships(User currentUser) {
+        checkUser(currentUser);
+        log.debug("Fetching active partnerships where user ID: {} is the student/owner", currentUser.getId());
+        List<AccountabilityPartner> partnerships = partnerRepository.findByUserId(currentUser.getId());
+        return partnerships.stream()
+                .map(AccountabilityPartnershipResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
 }

@@ -77,7 +77,7 @@ All failed API calls return standard HTTP 4xx/5xx status codes wrapped in the er
 | `HabitCategory` | `SPIRITUAL_MORAL`, `LIFESTYLE_PRODUCTIVITY` | High-level classification of habit target. |
 | `HabitSubCategory` | `PMO_RECOVERY`, `SMOKING_VAPING`, `DIGITAL_SCROLLING`, `GENERAL_HABIT` | Specific habit recovery domain. |
 | `PrivacyLevel` | `LEVEL_0_PRIVATE`, `LEVEL_1_STREAK_ONLY`, `LEVEL_2_FULL_COUNSEL` | Privacy visibility mode for accountability partners and mentors. |
-| `PartnerRole` | `ACCOUNTABILITY_PARTNER`, `SPIRITUAL_MENTOR` | Role assigned to a partner connected to a chain. |
+| `PartnerRole` | `PEER_BUDDY`, `SPIRITUAL_MENTOR` | Role assigned to a partner connected to a chain. |
 | `PartnershipStatus` | `PENDING`, `ACCEPTED`, `DECLINED`, `REVOKED` | Status of an accountability invitation/link. |
 | `MentorStatus` | `PENDING`, `APPROVED`, `REJECTED` | Review status of a verified mentor registration application. |
 | `BadgeType` | `NAFS_AMMARAH_SURVIVOR`, `NAFS_LAWWAMAH_STRIVER`, `NEURAL_REWIRE_21`, `HEART_PURITY_40`, `NAFS_MUTMAINNAH_RESET` | Milestone badges awarded for clean streak progression (Day 3, 7, 21, 40, 90). |

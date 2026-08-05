@@ -107,4 +107,13 @@ public class PartnerController {
         partnerService.notifyPartnerDistress(currentUser, request);
         return ResponseEntity.ok(ApiResponse.success("Partner distress alert sent successfully", null));
     }
+
+    @GetMapping("/partnerships")
+    @Operation(summary = "Get User Partnerships", description = "Retrieves all accountability partnerships/mentorships where the authenticated user is the student/owner.")
+    public ResponseEntity<ApiResponse<List<AccountabilityPartnershipResponse>>> getPartnerships(
+            @AuthenticationPrincipal User currentUser
+    ) {
+        List<AccountabilityPartnershipResponse> partnerships = partnerService.getUserPartnerships(currentUser);
+        return ResponseEntity.ok(ApiResponse.success(partnerships));
+    }
 }
