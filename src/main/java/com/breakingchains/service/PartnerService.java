@@ -179,7 +179,11 @@ public class PartnerService {
                 .findByPartnerUserIdAndStatus(currentUser.getId(), PartnershipStatus.ACCEPTED);
 
         return partnerships.stream()
-                .map(p -> HabitChainResponse.fromEntity(p.getHabitChain()))
+                .map(p -> {
+                    HabitChainResponse response = HabitChainResponse.fromEntity(p.getHabitChain());
+                    response.setPartnershipId(p.getId());
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 

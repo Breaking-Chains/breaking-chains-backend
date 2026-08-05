@@ -22,6 +22,7 @@ public class HabitChainResponse {
 
     private UUID id;
     private UUID userId;
+    private UUID partnershipId;
     private String title;
     private String description;
     private HabitCategory category;
