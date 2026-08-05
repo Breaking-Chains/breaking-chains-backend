@@ -1,5 +1,6 @@
 package com.breakingchains.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -11,5 +12,6 @@ import lombok.*;
 public class CounselNoteRequest {
 
     @NotBlank(message = "Counsel note content cannot be empty")
+    @JsonProperty("counselText")
     private String noteContent;
 }

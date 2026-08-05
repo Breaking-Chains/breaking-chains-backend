@@ -1,6 +1,7 @@
 package com.breakingchains.dto;
 
 import com.breakingchains.model.CounselNote;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -18,7 +19,10 @@ public class CounselNoteResponse {
     private UUID mentorId;
     private String mentorFullName;
     private String mentorUsername;
+
+    @JsonProperty("counselText")
     private String noteContent;
+
     private LocalDateTime createdAt;
 
     public static CounselNoteResponse fromEntity(CounselNote note) {

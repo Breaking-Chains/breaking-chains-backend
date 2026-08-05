@@ -61,7 +61,7 @@ INSERT INTO users (
     'LOCAL', 
     NULL, 
     TRUE, 
-    'USER', 
+    'MENTOR', 
     NOW() - INTERVAL '12 days', 
     NOW() - INTERVAL '12 days'
 ),
@@ -77,7 +77,7 @@ INSERT INTO users (
     'LOCAL', 
     NULL, 
     FALSE, 
-    'USER', 
+    'MENTOR', 
     NOW() - INTERVAL '10 days', 
     NOW() - INTERVAL '10 days'
 ),
@@ -157,7 +157,7 @@ INSERT INTO users (
     'LOCAL', 
     NULL, 
     TRUE, 
-    'USER', 
+    'MENTOR', 
     NOW() - INTERVAL '10 days', 
     NOW() - INTERVAL '10 days'
 ),
@@ -173,7 +173,7 @@ INSERT INTO users (
     'LOCAL', 
     NULL, 
     TRUE, 
-    'USER', 
+    'MENTOR', 
     NOW() - INTERVAL '9 days', 
     NOW() - INTERVAL '9 days'
 ),
@@ -189,7 +189,7 @@ INSERT INTO users (
     'LOCAL', 
     NULL, 
     TRUE, 
-    'USER', 
+    'MENTOR', 
     NOW() - INTERVAL '8 days', 
     NOW() - INTERVAL '8 days'
 ),
@@ -205,7 +205,7 @@ INSERT INTO users (
     'LOCAL', 
     NULL, 
     TRUE, 
-    'USER', 
+    'MENTOR', 
     NOW() - INTERVAL '7 days', 
     NOW() - INTERVAL '7 days'
 );
