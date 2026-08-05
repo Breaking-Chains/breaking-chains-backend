@@ -47,6 +47,7 @@ public class MentorService {
 
         boolean autoApprove = Boolean.TRUE.equals(request.getAutoApprove());
         MentorStatus initialStatus = autoApprove ? MentorStatus.APPROVED : MentorStatus.PENDING;
+        String inviteCode = "MENTOR-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
         MentorProfile profile = MentorProfile.builder()
                 .user(currentUser)
@@ -56,6 +57,7 @@ public class MentorService {
                 .organization(request.getOrganization() != null ? request.getOrganization().trim() : null)
                 .bio(request.getBio().trim())
                 .status(initialStatus)
+                .inviteCode(inviteCode)
                 .build();
 
         MentorProfile saved = mentorProfileRepository.save(profile);

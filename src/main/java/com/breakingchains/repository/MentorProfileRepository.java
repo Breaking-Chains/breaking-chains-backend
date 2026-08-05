@@ -12,6 +12,7 @@ import java.util.UUID;
 @Repository
 public interface MentorProfileRepository extends JpaRepository<MentorProfile, UUID> {
     Optional<MentorProfile> findByUserId(UUID userId);
+    Optional<MentorProfile> findByInviteCode(String inviteCode);
     List<MentorProfile> findByStatus(MentorStatus status);
     boolean existsByUserId(UUID userId);
 }

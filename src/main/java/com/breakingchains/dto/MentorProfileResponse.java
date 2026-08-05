@@ -26,6 +26,7 @@ public class MentorProfileResponse {
     private String bio;
     private MentorStatus status;
     private Boolean isVerified;
+    private String inviteCode;
     private LocalDateTime createdAt;
 
     public static MentorProfileResponse fromEntity(MentorProfile entity) {
@@ -43,6 +44,7 @@ public class MentorProfileResponse {
                 .bio(entity.getBio())
                 .status(entity.getStatus())
                 .isVerified(Boolean.TRUE.equals(entity.getUser().getIsVerifiedMentor()))
+                .inviteCode(entity.getInviteCode())
                 .createdAt(entity.getCreatedAt())
                 .build();
     }

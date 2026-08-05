@@ -57,6 +57,9 @@ public class MentorProfile {
     @Builder.Default
     private MentorStatus status = MentorStatus.PENDING;
 
+    @Column(name = "invite_code", unique = true)
+    private String inviteCode;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

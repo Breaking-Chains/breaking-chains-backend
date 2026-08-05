@@ -7,12 +7,14 @@ import com.breakingchains.repository.AccountabilityPartnerRepository;
 import com.breakingchains.repository.CounselNoteRepository;
 import com.breakingchains.repository.HabitChainRepository;
 import com.breakingchains.repository.PartnerMessageRepository;
+import com.breakingchains.repository.MentorProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -25,6 +27,7 @@ public class PartnerService {
     private final AccountabilityPartnerRepository partnerRepository;
     private final CounselNoteRepository counselNoteRepository;
     private final PartnerMessageRepository partnerMessageRepository;
+    private final MentorProfileRepository mentorProfileRepository;
 
     private void checkUser(User currentUser) {
         if (currentUser == null) {
@@ -69,9 +72,73 @@ public class PartnerService {
     public InvitePartnerResponse acceptInvite(User currentUser, AcceptPartnerInviteRequest request) {
         checkUser(currentUser);
 
-        log.info("User ID: {} attempting to accept invite code: {}", currentUser.getId(), request.getInviteCode());
+        String inviteCode = request.getInviteCode().trim().toUpperCase();
+        log.info("User ID: {} attempting to accept invite code: {}", currentUser.getId(), inviteCode);
 
-        AccountabilityPartner partnership = partnerRepository.findByInviteCode(request.getInviteCode().trim().toUpperCase())
+        // Check if the invite code belongs to a Mentor Profile (starts with "MENTOR-")
+        Optional<MentorProfile> mentorProfileOpt = mentorProfileRepository.findByInviteCode(inviteCode);
+        if (mentorProfileOpt.isPresent()) {
+            MentorProfile mentorProfile = mentorProfileOpt.get();
+            User mentorUser = mentorProfile.getUser();
+
+            if (mentorUser.getId().equals(currentUser.getId())) {
+                throw AppException.validationError("You cannot connect to yourself as a mentor.");
+            }
+
+            // Find the active/latest habit chain of the student (currentUser)
+            List<HabitChain> chains = habitChainRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId());
+            if (chains.isEmpty()) {
+                throw AppException.validationError("You must create at least one habit chain before connecting with a mentor.");
+            }
+            HabitChain studentChain = chains.get(0);
+
+            // Check if partnership already exists
+            Optional<AccountabilityPartner> existingOpt = partnerRepository.findByHabitChainIdAndPartnerUserId(studentChain.getId(), mentorUser.getId());
+            if (existingOpt.isPresent()) {
+                AccountabilityPartner existing = existingOpt.get();
+                if (existing.getStatus() == PartnershipStatus.ACCEPTED) {
+                    throw AppException.validationError("You are already connected to this mentor on your active habit chain.");
+                } else {
+                    // Update pending to accepted
+                    existing.setStatus(PartnershipStatus.ACCEPTED);
+                    AccountabilityPartner updated = partnerRepository.save(existing);
+                    return InvitePartnerResponse.builder()
+                            .partnershipId(updated.getId())
+                            .chainId(updated.getHabitChain().getId())
+                            .inviteCode(updated.getInviteCode())
+                            .role(updated.getRole())
+                            .status(updated.getStatus())
+                            .createdAt(updated.getCreatedAt())
+                            .build();
+                }
+            }
+
+            // Create a new AccountabilityPartner partnership representing the student-mentor relation
+            AccountabilityPartner partnership = AccountabilityPartner.builder()
+                    .habitChain(studentChain)
+                    .user(currentUser) // student
+                    .partnerUser(mentorUser) // mentor
+                    .role(PartnerRole.SPIRITUAL_MENTOR)
+                    .inviteCode(inviteCode)
+                    .status(PartnershipStatus.ACCEPTED)
+                    .build();
+
+            AccountabilityPartner updated = partnerRepository.save(partnership);
+            log.info("Partnership accepted successfully via Mentor Invite Code! Mentor ID: {}, Student ID: {}, Chain ID: {}",
+                    mentorUser.getId(), currentUser.getId(), studentChain.getId());
+
+            return InvitePartnerResponse.builder()
+                    .partnershipId(updated.getId())
+                    .chainId(updated.getHabitChain().getId())
+                    .inviteCode(updated.getInviteCode())
+                    .role(updated.getRole())
+                    .status(updated.getStatus())
+                    .createdAt(updated.getCreatedAt())
+                    .build();
+        }
+
+        // Default to peer-accountability flow if it's not a mentor code
+        AccountabilityPartner partnership = partnerRepository.findByInviteCode(inviteCode)
                 .orElseThrow(() -> AppException.notFound("Invalid or expired invite code"));
 
         if (partnership.getStatus() != PartnershipStatus.PENDING) {
