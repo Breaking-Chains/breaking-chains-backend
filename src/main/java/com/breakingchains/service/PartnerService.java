@@ -8,11 +8,14 @@ import com.breakingchains.repository.CounselNoteRepository;
 import com.breakingchains.repository.HabitChainRepository;
 import com.breakingchains.repository.PartnerMessageRepository;
 import com.breakingchains.repository.MentorProfileRepository;
+import com.breakingchains.repository.PartnershipFeedbackRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +31,7 @@ public class PartnerService {
     private final CounselNoteRepository counselNoteRepository;
     private final PartnerMessageRepository partnerMessageRepository;
     private final MentorProfileRepository mentorProfileRepository;
+    private final PartnershipFeedbackRepository feedbackRepository;
 
     private void checkUser(User currentUser) {
         if (currentUser == null) {
@@ -320,5 +324,84 @@ public class PartnerService {
         return partnerships.stream()
                 .map(AccountabilityPartnershipResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void initiateTermination(User currentUser, UUID partnershipId, ExitSurveyRequest request) {
+        checkUser(currentUser);
+        log.info("User ID: {} requesting termination for partnership ID: {}", currentUser.getId(), partnershipId);
+
+        AccountabilityPartner partnership = partnerRepository.findById(partnershipId)
+                .orElseThrow(() -> AppException.notFound("Partnership not found"));
+
+        if (!partnership.getUser().getId().equals(currentUser.getId())) {
+            throw AppException.unauthorized("You are not authorized to terminate this partnership");
+        }
+
+        if (partnership.getStatus() != PartnershipStatus.ACCEPTED) {
+            throw AppException.validationError("Only active partnerships can be terminated");
+        }
+
+        partnership.setStatus(PartnershipStatus.PENDING_TERMINATION);
+        partnership.setTerminationRequestedAt(LocalDateTime.now());
+        partnerRepository.save(partnership);
+
+        PartnershipFeedback feedback = PartnershipFeedback.builder()
+                .partnership(partnership)
+                .feedbackType("TERMINATION")
+                .reasonCategory(request.getReasonCategory())
+                .rating(request.getRating())
+                .userMessage(request.getExitMessage())
+                .build();
+
+        feedbackRepository.save(feedback);
+        log.info("Termination initiated for partnership ID: {} with exit feedback.", partnershipId);
+    }
+
+    @Transactional
+    public void cancelTermination(User currentUser, UUID partnershipId, CancellationFeedbackRequest request) {
+        checkUser(currentUser);
+        log.info("User ID: {} cancelling termination for partnership ID: {}", currentUser.getId(), partnershipId);
+
+        AccountabilityPartner partnership = partnerRepository.findById(partnershipId)
+                .orElseThrow(() -> AppException.notFound("Partnership not found"));
+
+        if (!partnership.getUser().getId().equals(currentUser.getId())) {
+            throw AppException.unauthorized("You are not authorized to cancel this termination");
+        }
+
+        if (partnership.getStatus() != PartnershipStatus.PENDING_TERMINATION) {
+            throw AppException.validationError("Partnership is not in pending termination status");
+        }
+
+        partnership.setStatus(PartnershipStatus.ACCEPTED);
+        partnership.setTerminationRequestedAt(null);
+        partnerRepository.save(partnership);
+
+        PartnershipFeedback feedback = PartnershipFeedback.builder()
+                .partnership(partnership)
+                .feedbackType("CANCELLATION")
+                .reasonCategory(request.getReasonCategory())
+                .rating(request.getRating())
+                .userMessage(request.getUserMessage())
+                .build();
+
+        feedbackRepository.save(feedback);
+        log.info("Termination cancelled for partnership ID: {} with cancellation feedback.", partnershipId);
+    }
+
+    @Scheduled(cron = "0 0 2 * * ?") // Runs every day at 2:00 AM
+    @Transactional
+    public void processExpiredTerminations() {
+        log.debug("Running background worker to process expired mentorship terminations");
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
+        List<AccountabilityPartner> expired = partnerRepository
+                .findByStatusAndTerminationRequestedAtBefore(PartnershipStatus.PENDING_TERMINATION, cutoff);
+
+        for (AccountabilityPartner p : expired) {
+            p.setStatus(PartnershipStatus.TERMINATED);
+            partnerRepository.save(p);
+            log.info("Mentorship partnership ID: {} successfully terminated after 7-day grace period.", p.getId());
+        }
     }
 }

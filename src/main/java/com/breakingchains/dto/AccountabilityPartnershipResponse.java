@@ -25,6 +25,7 @@ public class AccountabilityPartnershipResponse {
     private PartnershipStatus status;
     private String inviteCode;
     private LocalDateTime createdAt;
+    private LocalDateTime terminationRequestedAt;
 
     public static AccountabilityPartnershipResponse fromEntity(AccountabilityPartner partnership) {
         UUID partnerId = null;
@@ -48,6 +49,7 @@ public class AccountabilityPartnershipResponse {
                 .status(partnership.getStatus())
                 .inviteCode(partnership.getInviteCode())
                 .createdAt(partnership.getCreatedAt())
+                .terminationRequestedAt(partnership.getTerminationRequestedAt())
                 .build();
     }
 }

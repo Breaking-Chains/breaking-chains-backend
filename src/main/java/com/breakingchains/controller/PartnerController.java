@@ -116,4 +116,26 @@ public class PartnerController {
         List<AccountabilityPartnershipResponse> partnerships = partnerService.getUserPartnerships(currentUser);
         return ResponseEntity.ok(ApiResponse.success(partnerships));
     }
+
+    @PostMapping("/partnerships/{partnershipId}/terminate")
+    @Operation(summary = "Request Mentorship/Partnership Termination", description = "Initiates a 7-day grace termination period for a partnership and records the exit survey.")
+    public ResponseEntity<ApiResponse<Void>> terminatePartnership(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable("partnershipId") UUID partnershipId,
+            @Valid @RequestBody ExitSurveyRequest request
+    ) {
+        partnerService.initiateTermination(currentUser, partnershipId, request);
+        return ResponseEntity.ok(ApiResponse.success("Termination grace period initiated successfully", null));
+    }
+
+    @PostMapping("/partnerships/{partnershipId}/cancel-termination")
+    @Operation(summary = "Cancel Pending Mentorship/Partnership Termination", description = "Cancels a pending termination request, returning the partnership back to ACCEPTED and recording the cancellation survey.")
+    public ResponseEntity<ApiResponse<Void>> cancelPartnershipTermination(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable("partnershipId") UUID partnershipId,
+            @Valid @RequestBody CancellationFeedbackRequest request
+    ) {
+        partnerService.cancelTermination(currentUser, partnershipId, request);
+        return ResponseEntity.ok(ApiResponse.success("Termination request cancelled successfully. Guidance continues.", null));
+    }
 }

@@ -144,6 +144,70 @@ INSERT INTO users (
     'USER', 
     NOW() - INTERVAL '5 days', 
     NOW() - INTERVAL '5 days'
+),
+-- 8. Dr. Tariq Ramadan (Mentor User)
+(
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18', 
+    'dr.tariq@breakingchains.com', 
+    '$2a$10$HLJF1FS/AXv0eL8gSBdjReJwzBvrOQXSbS5amRKLA72MDk1dij8a2', 
+    'Dr. Tariq Ramadan', 
+    'dr_tariq', 
+    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150', 
+    'Spiritual psychologist and academic advisor specializing in Islamic morals and behavioral therapy.', 
+    'LOCAL', 
+    NULL, 
+    TRUE, 
+    'USER', 
+    NOW() - INTERVAL '10 days', 
+    NOW() - INTERVAL '10 days'
+),
+-- 9. Ustadh Mustafa Umar (Mentor User)
+(
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a19', 
+    'ustadh.mustafa@breakingchains.com', 
+    '$2a$10$HLJF1FS/AXv0eL8gSBdjReJwzBvrOQXSbS5amRKLA72MDk1dij8a2', 
+    'Ustadh Mustafa Umar', 
+    'ustadh_mustafa', 
+    'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=150&h=150', 
+    'Youth counselor and recovery guide, specializing in digital habit resets and moral purity coaching.', 
+    'LOCAL', 
+    NULL, 
+    TRUE, 
+    'USER', 
+    NOW() - INTERVAL '9 days', 
+    NOW() - INTERVAL '9 days'
+),
+-- 10. Sheikh Yasir Qadhi (Mentor User)
+(
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a20', 
+    'yasir.qadhi@breakingchains.com', 
+    '$2a$10$HLJF1FS/AXv0eL8gSBdjReJwzBvrOQXSbS5amRKLA72MDk1dij8a2', 
+    'Sheikh Yasir Qadhi', 
+    'yasir_qadhi', 
+    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150', 
+    'Dean of Academic Affairs and spiritual counselor focusing on family and youth recovery support.', 
+    'LOCAL', 
+    NULL, 
+    TRUE, 
+    'USER', 
+    NOW() - INTERVAL '8 days', 
+    NOW() - INTERVAL '8 days'
+),
+-- 11. Sister Yasmin Mogahed (Mentor User)
+(
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a21', 
+    'yasmin.mogahed@breakingchains.com', 
+    '$2a$10$HLJF1FS/AXv0eL8gSBdjReJwzBvrOQXSbS5amRKLA72MDk1dij8a2', 
+    'Sister Yasmin Mogahed', 
+    'yasmin_mogahed', 
+    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150', 
+    'Author and therapist specializing in spiritual focus, heart purification, and recovery support.', 
+    'LOCAL', 
+    NULL, 
+    TRUE, 
+    'USER', 
+    NOW() - INTERVAL '7 days', 
+    NOW() - INTERVAL '7 days'
 );
 
 -- -----------------------------------------------------------------------------
@@ -179,6 +243,62 @@ INSERT INTO mentor_profiles (
     'MENTOR456',
     NOW() - INTERVAL '10 days',
     NOW() - INTERVAL '10 days'
+),
+-- Dr. Tariq Ramadan Profile
+(
+    'e0000000-0000-0000-0000-000000000003',
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a18',
+    'PhD in Islamic Studies & Clinical Psychology',
+    'Spiritual Psychology & Moral Rehabilitation',
+    15,
+    'International Institute of Islamic Thought',
+    'Providing psychological and academic guidance based on Islamic ethics and modern cognitive techniques.',
+    'APPROVED',
+    'MENTOR789',
+    NOW() - INTERVAL '10 days',
+    NOW() - INTERVAL '10 days'
+),
+-- Ustadh Mustafa Umar Profile
+(
+    'e0000000-0000-0000-0000-000000000004',
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a19',
+    'MA in Theology & Youth Counseling',
+    'Digital Device Detox & Porn Habit Recovery',
+    5,
+    'California Youth Counseling Center',
+    'Dedicated to helping teens and young adults break digital loops and build high-integrity habits.',
+    'APPROVED',
+    'MENTOR101',
+    NOW() - INTERVAL '9 days',
+    NOW() - INTERVAL '9 days'
+),
+-- Sheikh Yasir Qadhi Profile
+(
+    'e0000000-0000-0000-0000-000000000005',
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a20',
+    'PhD in Theology & Family Guidance Counselor',
+    'Family Counseling & Spiritual Recovery Guidance',
+    12,
+    'Al-Maghrib Institute Counseling Services',
+    'Striving to support families and youth struggling with modern addiction triggers using faith-based systems.',
+    'APPROVED',
+    'MENTOR202',
+    NOW() - INTERVAL '8 days',
+    NOW() - INTERVAL '8 days'
+),
+-- Sister Yasmin Mogahed Profile
+(
+    'e0000000-0000-0000-0000-000000000006',
+    'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a21',
+    'MA in Psychology & Spiritual Coach',
+    'Heart Purity (Tazkiyah) & Sister Recovery Support',
+    10,
+    'Al-Huda Counseling Services',
+    'Author and counselor dedicated to spiritual healing, mental resilience, and recovery for sisters.',
+    'APPROVED',
+    'MENTOR303',
+    NOW() - INTERVAL '7 days',
+    NOW() - INTERVAL '7 days'
 );
 
 -- -----------------------------------------------------------------------------

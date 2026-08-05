@@ -4,5 +4,7 @@ public enum PartnershipStatus {
     PENDING,
     ACCEPTED,
     DECLINED,
-    REVOKED
+    REVOKED,
+    PENDING_TERMINATION,
+    TERMINATED
 }
